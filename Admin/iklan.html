@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Kelola Iklan Popup - Panel Admin</title>
+    <script src="../tailwind.js"></script>
+    <style>
+        .scrollbar-none::-webkit-scrollbar { display: none; }
+        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen h-screen flex flex-col md:flex-row select-none overflow-hidden">
+
+    <aside class="w-full md:w-64 bg-slate-800 border-b md:border-b-0 md:border-r border-slate-700 p-6 flex flex-col justify-between flex-shrink-0 h-auto md:h-screen z-20">
+        <div>
+            <div class="mb-8 text-center md:text-left">
+                <h2 class="text-2xl font-black tracking-wider text-blue-500">ADMIN PANEL</h2>
+                <p class="text-xs text-slate-400 mt-1">Sistem Manajemen Toko AA</p>
+            </div>
+
+            <nav class="space-y-2 flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 gap-2 md:gap-0 scrollbar-none">
+                <a href="admin.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Dashboard Admin
+                </a>
+                <a href="produk.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Kelola Produk
+                </a>
+                <a href="user.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Kelola User
+                </a>
+                <a href="order.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Detail Pesanan
+                </a>
+                <a href="chart.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Grafik Penjualan
+                </a>
+                <a href="rekap.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Rekap & Laris
+                </a>
+                <a href="iklan.html" class="block bg-blue-600 text-white font-bold px-4 py-3 rounded-xl shadow transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Kelola Iklan Popup 📢
+                </a>
+            </nav>
+        </div>
+
+        <button id="btn-logout-admin" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition mt-4 md:mt-0 shadow-lg shadow-red-900/20 flex-shrink-0">
+            Keluar Panel
+        </button>
+    </aside>
+
+    <main class="flex-1 p-6 md:p-8 h-screen flex flex-col overflow-y-auto scrollbar-none">
+        
+        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 mb-6 shadow-sm flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+            <div>
+                <h1 class="text-xl font-extrabold text-white">Manajemen Banner Promo Popup 📢</h1>
+                <p class="text-xs text-slate-400 mt-0.5">Atur pelapisan iklan dengan kustomisasi penuh pada teks tautan, ukuran, dan ketebalan huruf.</p>
+            </div>
+            <div class="bg-slate-900/60 px-4 py-2 rounded-xl border border-slate-700 text-right min-w-[140px]">
+                <span class="text-[10px] uppercase tracking-wider font-black text-slate-500 block">Format Data</span>
+                <span class="text-xs font-black text-blue-400 flex items-center justify-end gap-1 mt-0.5">
+                    📂 Advanced Custom Base64
+                </span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 items-start">
+            
+            <div class="lg:col-span-7 bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-md space-y-4">
+                <div class="border-b border-slate-700 pb-3">
+                    <h3 class="text-sm font-black text-white flex items-center gap-1.5">
+                        <span>⚙️</span> Konfigurasi Atribut Gaya
+                    </h3>
+                </div>
+
+                <div class="flex items-center justify-between bg-slate-950/40 p-3 rounded-xl border border-slate-700/60 shadow-inner">
+                    <div>
+                        <label class="text-xs font-bold text-slate-300 block">Status Aktivasi Iklan</label>
+                        <span id="statusLabel" class="text-[10px] font-black text-red-400 uppercase tracking-wide">Sembunyi dari Pembeli</span>
+                    </div>
+                    <button type="button" id="btnToggleStatus" onclick="toggleStatusIklan()" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-slate-700 transition-colors duration-200 ease-in-out focus:outline-none">
+                        <span id="toggleCircle" class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-0"></span>
+                    </button>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-400">Pilih File Gambar Banner:</label>
+                    <div class="flex items-center justify-center w-full">
+                        <label for="fileGambarLocal" class="flex flex-col items-center justify-center w-full h-24 border-2 border-slate-700 border-dashed rounded-xl cursor-pointer bg-slate-900 hover:bg-slate-950/60 transition text-center p-2">
+                            <span class="text-xl mb-0.5">🖼️</span>
+                            <p class="text-xs text-slate-300 font-bold" id="namaFileInfo">Klik untuk memilih gambar lokal</p>
+                        </label>
+                        <input type="file" id="fileGambarLocal" accept="image/*" onchange="prosesKonversiFileToBase64(this)" class="hidden" />
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/40 border border-slate-700 p-4 rounded-xl space-y-3">
+                    <div class="flex items-center justify-between border-b border-slate-700 pb-2">
+                        <span class="text-xs font-black text-blue-400 uppercase tracking-wider">Gaya Teks Atas (Header)</span>
+                        <label class="flex items-center cursor-pointer gap-2 select-none">
+                            <span id="lblStatusHeader" class="text-[10px] font-bold text-slate-400">Sembunyikan</span>
+                            <input type="checkbox" id="aktifHeader" onchange="toggleTeksAktif('Header')" class="rounded border-slate-600 bg-slate-800 text-blue-600 focus:ring-blue-500 h-3.5 w-3.5">
+                        </label>
+                    </div>
+                    <div id="boxHeaderControls" class="space-y-2.5">
+                        <input type="text" id="txtHeader" oninput="perbaruiLivePreviewMobile()" placeholder="Ketik teks header..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 transition font-medium">
+                        
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-400 block mb-1">Ukuran Huruf</label>
+                                <select id="sizeHeader" onchange="perbaruiLivePreviewMobile()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none">
+                                    <option value="text-[7px]">Mini (7px)</option>
+                                    <option value="text-[10px]">Kecil (10px)</option>
+                                    <option value="text-xs" selected>Normal (12px)</option>
+                                    <option value="text-sm">Sedang (14px)</option>
+                                    <option value="text-base">Besar (16px)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-400 block mb-1">Ketebalan</label>
+                                <select id="weightHeader" onchange="perbaruiLivePreviewMobile()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none">
+                                    <option value="font-normal">Reguler</option>
+                                    <option value="font-semibold">Semi Bold</option>
+                                    <option value="font-bold">Bold</option>
+                                    <option value="font-black" selected>Extra Bold</option>
+                                </select>
+                            </div>
+                        </div>
+                        <input type="url" id="linkHeader" oninput="perbaruiLivePreviewMobile()" placeholder="Link tautan klik header (Opsional: https://...)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-[11px] text-slate-300 focus:outline-none focus:border-blue-500 transition">
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/40 border border-slate-700 p-4 rounded-xl space-y-3">
+                    <div class="flex items-center justify-between border-b border-slate-700 pb-2">
+                        <span class="text-xs font-black text-blue-400 uppercase tracking-wider">Gaya Teks Bawah (Footer)</span>
+                        <label class="flex items-center cursor-pointer gap-2 select-none">
+                            <span id="lblStatusFooter" class="text-[10px] font-bold text-slate-400">Sembunyikan</span>
+                            <input type="checkbox" id="aktifFooter" onchange="toggleTeksAktif('Footer')" class="rounded border-slate-600 bg-slate-800 text-blue-600 focus:ring-blue-500 h-3.5 w-3.5">
+                        </label>
+                    </div>
+                    <div id="boxFooterControls" class="space-y-2.5">
+                        <input type="text" id="txtFooter" oninput="perbaruiLivePreviewMobile()" placeholder="Ketik teks footer..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 transition font-medium">
+                        
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-400 block mb-1">Ukuran Huruf</label>
+                                <select id="sizeFooter" onchange="perbaruiLivePreviewMobile()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none">
+                                    <option value="text-[7px]">Mini (7px)</option>
+                                    <option value="text-[9px]">Sangat Kecil (9px)</option>
+                                    <option value="text-[11px]" selected>Kecil (11px)</option>
+                                    <option value="text-xs">Normal (12px)</option>
+                                    <option value="text-sm">Sedang (14px)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-400 block mb-1">Ketebalan</label>
+                                <select id="weightFooter" onchange="perbaruiLivePreviewMobile()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none">
+                                    <option value="font-normal">Reguler</option>
+                                    <option value="font-semibold" selected>Semi Bold</option>
+                                    <option value="font-bold">Bold</option>
+                                    <option value="font-black">Extra Bold</option>
+                                </select>
+                            </div>
+                        </div>
+                        <input type="url" id="linkFooter" oninput="perbaruiLivePreviewMobile()" placeholder="Link tautan klik footer (Opsional: https://...)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-[11px] text-slate-300 focus:outline-none focus:border-blue-500 transition">
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <button id="btnSimpanIklan" onclick="simpanIklanKeCloud()" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-black py-3.5 rounded-xl transition transform active:scale-95 shadow-md shadow-blue-900/20 flex items-center justify-center gap-2">
+                        <span id="textBtn">Simpan & Perbarui Banner Realtime ➔</span>
+                        <span id="spinnerLoading" class="hidden animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-5 flex flex-col space-y-3">
+                <span class="text-[10px] font-black text-slate-500 uppercase tracking-wider pl-1">📱 Simulasi Realtime Dashboard Pembeli:</span>
+                
+                <div class="w-full aspect-[9/16] max-w-[280px] mx-auto bg-slate-950 border-4 border-slate-800 rounded-[2.2rem] shadow-2xl relative overflow-hidden flex flex-col p-2 ring-4 ring-blue-500/5">
+                    <div class="w-full h-3.5 flex justify-between items-center text-[8px] text-white/30 px-3 font-mono select-none">
+                        <span>12:30</span>
+                        <div class="flex items-center gap-0.5">📶 🔋</div>
+                    </div>
+
+                    <div class="flex-1 rounded-[1.6rem] bg-slate-100 p-2.5 space-y-2.5 relative overflow-hidden text-[8px] text-slate-400">
+                        <div class="h-5 w-12 bg-white border border-slate-200 rounded-md"></div>
+                        <div class="h-16 w-full bg-white border border-slate-200 rounded-lg p-2 space-y-1"></div>
+
+                        <div id="simulasiOverlay" class="absolute inset-0 bg-transparent backdrop-blur-md flex justify-center items-center p-3 transition-all duration-300">
+                            <div class="relative w-full max-w-[160px] flex flex-col items-center gap-1.5 bg-white p-2.5 rounded-2xl shadow-2xl text-center border border-slate-200/40">
+                                <div class="absolute -top-3 -right-2 bg-slate-800 text-white w-4 h-4 rounded-full flex items-center justify-center font-bold text-[7px]">✕</div>
+                                
+                                <div id="previewHeaderText" class="leading-tight text-slate-800 hidden"></div>
+
+                                <div class="w-full bg-slate-200 aspect-square rounded-xl overflow-hidden border border-slate-100">
+                                    <img id="previewImage" src="" class="w-full h-full object-cover hidden" alt="Preview">
+                                    <div id="previewPlaceholder" class="w-full h-full flex flex-col justify-center items-center text-slate-400 p-2 font-black text-[7px]"><span>GAMBAR</span></div>
+                                </div>
+
+                                <div id="previewFooterText" class="leading-tight text-slate-500 hidden"></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAz9WumMNc97Ul-QnONh5rI0hKXh5ZelRY",
+            authDomain: "toko-aa-ef6aa.firebaseapp.com",
+            databaseURL: "https://toko-aa-ef6aa-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "toko-aa-ef6aa",
+            storageBucket: "toko-aa-ef6aa.firebasestorage.app",
+            messagingSenderId: "923877778887",
+            appId: "1:923877778887:web:5eaf71243d582049c825e2"
+        };
+
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        const dbAdminIklan = firebase.database();
+
+        let iklanStatusAktif = false;
+        let stringBase64Gambar = "";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('isLoggedIn') !== 'true' || localStorage.getItem('userRole') !== 'admin') {
+                window.location.href = '../index.html'; return;
+            }
+
+            document.getElementById('btn-logout-admin')?.addEventListener('click', () => {
+                if (confirm('Apakah Anda yakin ingin keluar dari Panel Admin?')) {
+                    localStorage.clear(); window.location.href = '../index.html';
+                }
+            });
+
+            dbAdminIklan.ref('pengaturanIklan').once('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    stringBase64Gambar = data.urlGambar || '';
+                    iklanStatusAktif = data.statusAktif || false;
+                    
+                    document.getElementById('txtHeader').value = data.teksHeader || '';
+                    document.getElementById('sizeHeader').value = data.sizeHeader || 'text-xs';
+                    document.getElementById('weightHeader').value = data.weightHeader || 'font-black';
+                    document.getElementById('linkHeader').value = data.linkHeader || '';
+                    document.getElementById('aktifHeader').checked = data.tampilkanHeader || false;
+
+                    document.getElementById('txtFooter').value = data.teksFooter || '';
+                    document.getElementById('sizeFooter').value = data.sizeFooter || 'text-[11px]';
+                    document.getElementById('weightFooter').value = data.weightFooter || 'font-semibold';
+                    document.getElementById('linkFooter').value = data.linkFooter || '';
+                    document.getElementById('aktifFooter').checked = data.tampilkanFooter || false;
+                    
+                    if (stringBase64Gambar) { document.getElementById('namaFileInfo').innerText = "📂 Gambar aktif tersimpan"; }
+                    
+                    toggleTeksAktif('Header');
+                    toggleTeksAktif('Footer');
+                    SinkronisasiTampilanUIStatus();
+                }
+            });
+        });
+
+        function prosesKonversiFileToBase64(element) {
+            const file = element.files[0];
+            if (!file) return;
+            document.getElementById('namaFileInfo').innerText = `📄 ${file.name}`;
+            const reader = new FileReader();
+            reader.onloadend = function() {
+                stringBase64Gambar = reader.result;
+                perbaruiLivePreviewMobile();
+            }
+            reader.readAsDataURL(file);
+        }
+
+        function toggleTeksAktif(tipe) {
+            const checkbox = document.getElementById(`aktif${tipe}`);
+            const isChecked = checkbox.checked;
+            document.getElementById(`txt${tipe}`).disabled = !isChecked;
+            document.getElementById(`size${tipe}`).disabled = !isChecked;
+            document.getElementById(`weight${tipe}`).disabled = !isChecked;
+            document.getElementById(`link${tipe}`).disabled = !isChecked;
+
+            const labelStatus = document.getElementById(`lblStatus${tipe}`);
+            labelStatus.innerText = isChecked ? "Tampilkan" : "Sembunyi";
+            labelStatus.className = isChecked ? "text-[10px] font-bold text-blue-400" : "text-[10px] font-bold text-slate-400";
+            
+            perbaruiLivePreviewMobile();
+        }
+
+        function perbaruiLivePreviewMobile() {
+            const imgEl = document.getElementById('previewImage');
+            const placeholderEl = document.getElementById('previewPlaceholder');
+            if (stringBase64Gambar) {
+                imgEl.src = stringBase64Gambar; imgEl.classList.remove('hidden'); placeholderEl.classList.add('hidden');
+            } else {
+                imgEl.src = ""; imgEl.classList.add('hidden'); placeholderEl.classList.remove('hidden');
+            }
+
+            // Preview Header
+            const chkHeader = document.getElementById('aktifHeader').checked;
+            const txtHeader = document.getElementById('txtHeader').value;
+            const viewHeader = document.getElementById('previewHeaderText');
+            if (chkHeader && txtHeader) {
+                viewHeader.innerText = txtHeader;
+                viewHeader.className = `leading-tight text-slate-800 ${document.getElementById('sizeHeader').value} ${document.getElementById('weightHeader').value}`;
+                if(document.getElementById('linkHeader').value) { viewHeader.classList.add('text-blue-600', 'underline'); }
+                viewHeader.classList.remove('hidden');
+            } else { viewHeader.classList.add('hidden'); }
+
+            // Preview Footer
+            const chkFooter = document.getElementById('aktifFooter').checked;
+            const txtFooter = document.getElementById('txtFooter').value;
+            const viewFooter = document.getElementById('previewFooterText');
+            if (chkFooter && txtFooter) {
+                viewFooter.innerText = txtFooter;
+                viewFooter.className = `leading-tight text-slate-500 ${document.getElementById('sizeFooter').value} ${document.getElementById('weightFooter').value}`;
+                if(document.getElementById('linkFooter').value) { viewFooter.classList.add('text-blue-600', 'underline'); }
+                viewFooter.classList.remove('hidden');
+            } else { viewFooter.classList.add('hidden'); }
+        }
+
+        function toggleStatusIklan() { iklanStatusAktif = !iklanStatusAktif; SinkronisasiTampilanUIStatus(); }
+
+        function SinkronisasiTampilanUIStatus() {
+            const btn = document.getElementById('btnToggleStatus');
+            const circle = document.getElementById('toggleCircle');
+            const label = document.getElementById('statusLabel');
+            const overlay = document.getElementById('simulasiOverlay');
+
+            if (iklanStatusAktif) {
+                btn.className = btn.className.replace('bg-slate-700', 'bg-blue-600');
+                circle.className = circle.className.replace('translate-x-0', 'translate-x-5');
+                label.innerText = "Aktif (Muncul Otomatis)"; label.classList.replace('text-red-400', 'text-blue-400');
+                overlay.classList.remove('opacity-0', 'pointer-events-none');
+            } else {
+                btn.className = btn.className.replace('bg-blue-600', 'bg-slate-700');
+                circle.className = circle.className.replace('translate-x-5', 'translate-x-0');
+                label.innerText = "Sembunyi dari Pembeli"; label.classList.replace('text-blue-400', 'text-red-400');
+                overlay.classList.add('opacity-0', 'pointer-events-none');
+            }
+        }
+
+        function simpanIklanKeCloud() {
+            if (iklanStatusAktif && stringBase64Gambar === "") { alert("⚠️ Harap unggah gambar terlebih dahulu!"); return; }
+
+            const btn = document.getElementById('btnSimpanIklan');
+            const txt = document.getElementById('textBtn');
+            const spinner = document.getElementById('spinnerLoading');
+
+            btn.disabled = true; txt.innerText = "Memperbarui Cloud..."; spinner.classList.remove('hidden');
+
+            const payloadIklan = {
+                statusAktif: iklanStatusAktif,
+                urlGambar: stringBase64Gambar,
+                tampilkanHeader: document.getElementById('aktifHeader').checked,
+                teksHeader: document.getElementById('txtHeader').value.trim(),
+                sizeHeader: document.getElementById('sizeHeader').value,
+                weightHeader: document.getElementById('weightHeader').value,
+                linkHeader: document.getElementById('linkHeader').value.trim(),
+                tampilkanFooter: document.getElementById('aktifFooter').checked,
+                teksFooter: document.getElementById('txtFooter').value.trim(),
+                sizeFooter: document.getElementById('sizeFooter').value,
+                weightFooter: document.getElementById('weightFooter').value,
+                linkFooter: document.getElementById('linkFooter').value.trim()
+            };
+
+            dbAdminIklan.ref('pengaturanIklan').set(payloadIklan, (error) => {
+                btn.disabled = false; spinner.classList.add('hidden'); txt.innerText = "Simpan & Perbarui Banner Realtime ➔";
+                if (!error) { alert("✅ Struktur kustomisasi iklan berhasil disimpan."); } else { alert("❌ Gagal."); }
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Panel Admin - Rekap & Laris</title>
+    <script src="../tailwind.js"></script>
+    <style>
+        .scrollbar-none::-webkit-scrollbar { display: none; }
+        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen h-screen flex flex-col md:flex-row select-none overflow-hidden">
+
+    <aside class="w-full md:w-64 bg-slate-800 border-b md:border-b-0 md:border-r border-slate-700 p-6 flex flex-col justify-between flex-shrink-0 h-auto md:h-screen z-20">
+        <div>
+            <div class="mb-8 text-center md:text-left">
+                <h2 class="text-2xl font-black tracking-wider text-blue-500">ADMIN PANEL</h2>
+                <p class="text-xs text-slate-400 mt-1">Sistem Manajemen Toko AA</p>
+            </div>
+
+            <nav class="space-y-2 flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 gap-2 md:gap-0 scrollbar-none">
+                <a href="admin.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Dashboard Admin
+                </a>
+                <a href="produk.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Kelola Produk
+                </a>
+                <a href="user.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Kelola User
+                </a>
+                <a href="order.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Detail Pesanan
+                </a>
+                <a href="chart.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Grafik Penjualan
+                </a>
+                <a href="rekap.html" class="block bg-blue-600 text-white font-bold px-4 py-3 rounded-xl shadow transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Rekap & Laris
+                </a>
+                <a href="iklan.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Kelola Iklan Popup 📢
+                </a>
+            </nav>
+        </div>
+
+        <button id="btn-logout-admin" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition mt-4 md:mt-0 shadow-lg shadow-red-900/20 flex-shrink-0">
+            Keluar Panel
+        </button>
+    </aside>
+
+    <main class="flex-1 p-6 md:p-8 h-screen flex flex-col overflow-y-auto scrollbar-none">
+        
+        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 mb-6 shadow-sm flex flex-col sm:flex-row justify-between sm:items-center gap-4 flex-shrink-0">
+            <div>
+                <h1 class="text-xl font-extrabold text-white flex items-center gap-2"><span>📋</span> Rekap Laporan & Menu Terlaris</h1>
+                <p class="text-xs text-slate-400 mt-0.5">Analisis kuantitas penjualan item kuliner beserta omzet kotor per produk selesai.</p>
+            </div>
+            
+            <div class="flex items-center bg-slate-900 border border-slate-700 rounded-xl p-1 gap-1 flex-shrink-0 text-xs font-black">
+                <button id="btnFilter-hari" onclick="gantiFilterRekap('hari')" class="px-3 py-2 rounded-lg transition duration-150 bg-blue-600 text-white">Hari Ini</button>
+                <button id="btnFilter-bulan" onclick="gantiFilterRekap('bulan')" class="px-3 py-2 rounded-lg transition duration-150 text-slate-400 hover:text-white">Bulan Ini</button>
+                <button id="btnFilter-all" onclick="gantiFilterRekap('all')" class="px-3 py-2 rounded-lg transition duration-150 text-slate-400 hover:text-white">Semua (All-Time)</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 min-h-0 overflow-hidden">
+            
+            <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-md flex flex-col lg:col-span-7 h-full overflow-hidden">
+                <div class="border-b border-slate-700 pb-3 mb-4 flex justify-between items-center flex-shrink-0 gap-2">
+                    <div class="truncate">
+                        <h3 class="text-sm font-black text-white flex items-center gap-1.5"><span>📊</span> Rincian Omzet</h3>
+                        <p id="subJudulRekapTabel" class="text-[10px] text-slate-400 mt-0.5 truncate">Menghitung akumulasi jumlah item.</p>
+                    </div>
+                    <span id="grandTotalRekapDana" class="bg-blue-950/60 border border-blue-800/80 text-blue-400 text-xs font-mono font-black px-2.5 py-1 rounded-lg flex-shrink-0 whitespace-nowrap">Total: Rp 0</span>
+                </div>
+
+                <div class="overflow-y-auto flex-1 pr-1 scrollbar-none">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-700 text-[10px] font-black text-slate-500 uppercase tracking-wider">
+                                <th class="pb-3 pl-2">Nama Kuliner</th>
+                                <th class="pb-3 text-center w-20">Pcs</th>
+                                <th class="pb-3 text-right pr-2 w-32">Sub-Total Omzet</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyLaporanRekap" class="divide-y divide-slate-700/40 text-xs text-slate-300">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-md flex flex-col lg:col-span-5 h-full overflow-hidden">
+                <div class="border-b border-slate-700 pb-3 mb-4 flex-shrink-0">
+                    <h3 class="text-sm font-black text-white flex items-center gap-1.5"><span>🏆</span> Juara Menu Paling Laris</h3>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Peringkat diurutkan otomatis berdasarkan kuantitas tertinggi.</p>
+                </div>
+
+                <div id="wrapperRankingMenuLaris" class="overflow-y-auto flex-1 pr-1 space-y-4 text-xs scrollbar-none">
+                    </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAz9WumMNc97Ul-QnONh5rI0hKXh5ZelRY",
+            authDomain: "toko-aa-ef6aa.firebaseapp.com",
+            databaseURL: "https://toko-aa-ef6aa-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "toko-aa-ef6aa",
+            storageBucket: "toko-aa-ef6aa.firebasestorage.app",
+            messagingSenderId: "923877778887",
+            appId: "1:923877778887:web:5eaf71243d582049c825e2"
+        };
+
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        const dbRekapPage = firebase.database();
+
+        let masterDataOrders = [];
+        let filterWaktuAktif = "hari";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('isLoggedIn') !== 'true' || localStorage.getItem('userRole') !== 'admin') {
+                window.location.href = '../index.html'; return;
+            }
+
+            document.getElementById('btn-logout-admin')?.addEventListener('click', () => {
+                if (confirm('Apakah Anda yakin ingin keluar dari Panel Admin?')) {
+                    localStorage.clear(); window.location.href = '../index.html';
+                }
+            });
+
+            dbRekapPage.ref('daftarPesanan').on('value', (snapshot) => {
+                const dataCloud = snapshot.val() || {};
+                masterDataOrders = Object.keys(dataCloud).map(key => ({
+                    firebaseKey: key,
+                    waktuPesanan: dataCloud[key].waktuPesanan || '-',
+                    status: dataCloud[key].status || 'Pending',
+                    items: dataCloud[key].items || []
+                }));
+
+                hitungDanRenderLaporanRekap();
+            });
+        });
+
+        window.gantiFilterRekap = function(tipe) {
+            filterWaktuAktif = tipe;
+            ['hari', 'bulan', 'all'].forEach(t => {
+                const btn = document.getElementById(`btnFilter-${t}`);
+                if(t === tipe) {
+                    btn.className = "px-3 py-2 rounded-lg transition duration-150 bg-blue-600 text-white";
+                } else {
+                    btn.className = "px-3 py-2 rounded-lg transition duration-150 text-slate-400 hover:text-white";
+                }
+            });
+            hitungDanRenderLaporanRekap();
+        }
+
+        function hitungDanRenderLaporanRekap() {
+            const tbody = document.getElementById('tbodyLaporanRekap');
+            const wadahLaris = document.getElementById('wrapperRankingMenuLaris');
+            const txtGrandTotal = document.getElementById('grandTotalRekapDana');
+            const txtSubJudul = document.getElementById('subJudulRekapTabel');
+
+            if(!tbody || !wadahLaris) return;
+            tbody.innerHTML = ''; wadahLaris.innerHTML = '';
+
+            const skrg = new Date();
+            const tglSkrg = skrg.getDate();
+            const blnSkrg = skrg.getMonth();
+            const thnSkrg = skrg.getFullYear();
+
+            if(filterWaktuAktif === "hari") txtSubJudul.innerText = "Data lunas tanggal hari ini.";
+            else if(filterWaktuAktif === "bulan") txtSubJudul.innerText = "Laporan bulan berjalan saat ini.";
+            else txtSubJudul.innerText = "Akumulasi sepanjang masa.";
+
+            let masterRekapProdukMap = {};
+            let grandTotalOmzetUang = 0;
+
+            masterDataOrders.forEach(o => {
+                if(!o || o.status !== 'Selesai' || !o.waktuPesanan || o.waktuPesanan === '-') return;
+
+                let lolosSaringanWaktu = false;
+                try {
+                    const formatAman = o.waktuPesanan.replace(/\//g, '-').replace(' ', 'T');
+                    const tglNotaObj = new Date(formatAman);
+                    
+                    if (!isNaN(tglNotaObj.getTime())) {
+                        if (filterWaktuAktif === "all") {
+                            lolosSaringanWaktu = true;
+                        } else if (filterWaktuAktif === "hari") {
+                            lolosSaringanWaktu = (tglNotaObj.getDate() === tglSkrg && tglNotaObj.getMonth() === blnSkrg && tglNotaObj.getFullYear() === thnSkrg);
+                        } else if (filterWaktuAktif === "bulan") {
+                            lolosSaringanWaktu = (tglNotaObj.getMonth() === blnSkrg && tglNotaObj.getFullYear() === thnSkrg);
+                        }
+                    }
+                } catch(e) { return; }
+
+                if (!lolosSaringanWaktu) return;
+
+                const listItemPesanan = o.items || [];
+                if (Array.isArray(listItemPesanan)) {
+                    listItemPesanan.forEach(item => {
+                        if (!item || !item.nama) return;
+                        const namaMenu = item.nama;
+                        const porsi = parseInt(item.jumlah || 1);
+                        const hargaSatuan = parseInt(item.harga || 0);
+                        const subTotalUang = porsi * hargaSatuan;
+
+                        grandTotalOmzetUang += subTotalUang;
+
+                        if (!masterRekapProdukMap[namaMenu]) {
+                            masterRekapProdukMap[namaMenu] = { nama: namaMenu, totalPorsi: 0, totalOmzet: 0 };
+                        }
+                        masterRekapProdukMap[namaMenu].totalPorsi += porsi;
+                        masterRekapProdukMap[namaMenu].totalOmzet += subTotalUang;
+                    });
+                }
+            });
+
+            // FIX BARIS: Menampilkan nominal total dalam bentuk super kompak
+            txtGrandTotal.innerText = `Total: Rp ${grandTotalOmzetUang.toLocaleString('id-ID')}`;
+            let arrayRekapProduk = Object.values(masterRekapProdukMap);
+
+            if (arrayRekapProduk.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="py-8 text-center text-slate-500 italic">Tidak ada rekap data pesanan selesai.</td></tr>`;
+                wadahLaris.innerHTML = `<div class="text-center text-slate-500 italic pt-6">Belum ada ranking menu terkumpul.</div>`;
+                return;
+            }
+
+            // COL A: TABEL DETAIL KIRI (A-Z)
+            arrayRekapProduk.sort((a, b) => a.nama.localeCompare(b.nama));
+            arrayRekapProduk.forEach(item => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-700/20 transition border-b border-slate-700/40">
+                        <td class="py-3 pl-2 font-bold text-slate-200 capitalize">${item.nama}</td>
+                        <td class="py-3 text-center font-mono font-bold text-blue-400">${item.totalPorsi} Pcs</td>
+                        <td class="py-3 text-right pr-2 font-mono font-black text-emerald-400">Rp ${item.totalOmzet.toLocaleString('id-ID')}</td>
+                    </tr>`;
+            });
+
+            // COL B: WIDGET PROGRESS BAR TERLARIS KANAN
+            let arrayRankingLaris = [...arrayRekapProduk].sort((a, b) => b.totalPorsi - a.totalPorsi);
+            const porsiJuaraSatu = arrayRankingLaris[0].totalPorsi || 1;
+
+            arrayRankingLaris.forEach((item, index) => {
+                const persenLebarBar = (item.totalPorsi / porsiJuaraSatu) * 100;
+                let warnaBar = "bg-gradient-to-r from-blue-600 to-cyan-500 shadow-blue-500/10";
+                let badgeMedali = `<span class="bg-slate-900 text-slate-400 w-5 h-5 rounded-md flex items-center justify-center font-black text-[10px]">${index + 1}</span>`;
+
+                if (index === 0) {
+                    warnaBar = "bg-gradient-to-r from-amber-500 to-yellow-400 shadow-amber-500/20";
+                    badgeMedali = `<span class="bg-amber-950/60 border border-amber-800 text-amber-400 w-5 h-5 rounded-md flex items-center justify-center font-black text-[10px]">👑</span>`;
+                } else if (index === 1) {
+                    warnaBar = "bg-gradient-to-r from-slate-400 to-slate-300 shadow-slate-400/20";
+                    badgeMedali = `<span class="bg-slate-950 text-slate-300 border border-slate-700 w-5 h-5 rounded-md flex items-center justify-center font-black text-[10px]">2</span>`;
+                } else if (index === 2) {
+                    warnaBar = "bg-gradient-to-r from-amber-700 to-amber-600 shadow-amber-700/20";
+                    badgeMedali = `<span class="bg-amber-950 text-amber-600 border border-amber-900 w-5 h-5 rounded-md flex items-center justify-center font-black text-[10px]">3</span>`;
+                }
+
+                wadahLaris.innerHTML += `
+                    <div class="space-y-1.5 group">
+                        <div class="flex justify-between items-center gap-2">
+                            <div class="flex items-center gap-2 truncate">
+                                ${badgeMedali}
+                                <span class="font-bold text-slate-200 capitalize truncate">${item.nama}</span>
+                            </div>
+                            <span class="font-mono font-black text-slate-300 flex-shrink-0">${item.totalPorsi} pcs</span>
+                        </div>
+                        <div class="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden border border-slate-700/40">
+                            <div style="width: ${persenLebarBar}%" class="h-full rounded-full transition-all duration-700 ease-out ${warnaBar}"></div>
+                        </div>
+                    </div>`;
+            });
+        }
+    </script>
+</body>
+</html>

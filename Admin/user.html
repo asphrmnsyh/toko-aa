@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Panel Admin - Kelola User</title>
+    <script src="../tailwind.js"></script>
+    <style>
+        .scrollbar-none::-webkit-scrollbar { display: none; }
+        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+        th { position: sticky; top: 0; background-color: #1e293b; z-index: 10; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen h-screen flex flex-col md:flex-row select-none overflow-hidden">
+
+    <div id="toastAlert" class="fixed top-4 right-4 bg-emerald-600 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-2xl transition-all duration-300 transform translate-y-[-20px] opacity-0 pointer-events-none z-50 flex items-center gap-2">
+        <span>✅</span> <span id="toastMessage">Data user berhasil diperbarui!</span>
+    </div>
+
+    <aside class="w-full md:w-64 bg-slate-800 border-b md:border-b-0 md:border-r border-slate-700 p-6 flex flex-col justify-between flex-shrink-0 h-auto md:h-screen z-20">
+        <div>
+            <div class="mb-8 text-center md:text-left">
+                <h2 class="text-2xl font-black tracking-wider text-blue-500">ADMIN PANEL</h2>
+                <p class="text-xs text-slate-400 mt-1">Sistem Manajemen Toko AA</p>
+            </div>
+
+            <nav class="space-y-2 flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 gap-2 md:gap-0 scrollbar-none">
+                <a href="admin.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Dashboard Admin
+                </a>
+                <a href="produk.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Kelola Produk
+                </a>
+                <a href="user.html" class="block bg-blue-600 text-white font-bold px-4 py-3 rounded-xl shadow transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Kelola User
+                </a>
+                <a href="order.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Detail Pesanan
+                </a>
+                <a href="chart.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Grafik Penjualan
+                </a>
+                <a href="rekap.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Rekap & Laris
+                </a>
+                <a href="iklan.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Kelola Iklan Popup 📢
+                </a>
+            </nav>
+        </div>
+
+        <button id="btn-logout-admin" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition mt-4 md:mt-0 shadow-lg shadow-red-900/20 flex-shrink-0">
+            Keluar Panel
+        </button>
+    </aside>
+
+    <main class="flex-1 p-6 md:p-8 h-screen flex flex-col overflow-hidden relative">
+        
+        <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 mb-5 shadow-sm flex-shrink-0">
+            <h1 class="text-xl font-extrabold text-white">Kelola Pengguna Realtime 👥</h1>
+            <p class="text-xs text-slate-400 mt-0.5">Klik baris tabel untuk melihat rincian detail, atau klik tombol Edit untuk memodifikasi data.</p>
+        </div>
+
+        <div class="flex-1 bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-md flex flex-col overflow-hidden mb-2">
+            
+            <div id="tabKategoriContainer" class="flex items-center gap-1.5 border-b border-slate-700 pb-3 mb-4 overflow-x-auto scrollbar-none flex-shrink-0">
+                <button onclick="setFilterRoleAdmin('Semua')" id="tab-Semua" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex-shrink-0 bg-blue-600 text-white">Semua</button>
+                <button onclick="setFilterRoleAdmin('admin')" id="tab-admin" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex-shrink-0 bg-slate-900 text-slate-400 hover:text-white">Admin</button>
+                <button onclick="setFilterRoleAdmin('customer')" id="tab-customer" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex-shrink-0 bg-slate-900 text-slate-400 hover:text-white">Customer</button>
+            </div>
+
+            <div id="tabelScrollContainer" class="flex-1 overflow-y-auto pr-1 text-slate-300">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-700 text-[10px] font-black text-slate-500 uppercase tracking-wider">
+                            <th class="pb-3 pt-1 pl-3">Nama (Username)</th>
+                            <th class="pb-3 pt-1">Status Aktif</th> <th class="pb-3 pt-1 text-center w-32">Hak Akses (Role)</th>
+                            <th class="pb-3 pt-1 text-center w-36">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelUserBody" class="divide-y divide-slate-700/40 text-xs">
+                        </tbody>
+                </table>
+
+                <div id="adminScrollLoader" class="text-center py-3 text-[11px] text-slate-500 font-medium hidden">
+                    🔄 Memuat data pengguna selanjutnya...
+                </div>
+            </div>
+        </div>
+
+        <button onclick="bukaModalFormUser(false)" class="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center text-2xl font-black shadow-2xl transition transform hover:scale-105 active:scale-95 z-30 border border-blue-500">
+            ＋
+        </button>
+    </main>
+
+    <div id="modalRincianUser" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden justify-center items-center p-4">
+        <div class="bg-slate-800 border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl transform scale-95 opacity-0 transition-all duration-200" id="modalRincianContent">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3 mb-5">
+                <h3 class="text-sm font-black text-white flex items-center gap-2">
+                    <span>🔍</span> Rincian Profil Pengguna
+                </h3>
+                <button onclick="tutupModalRincianUser()" class="text-slate-400 hover:text-white text-lg font-bold focus:outline-none">✕</button>
+            </div>
+            
+            <div class="space-y-4 text-xs text-slate-300 pl-1">
+                <div class="grid grid-cols-12 gap-1 items-baseline">
+                    <div class="col-span-4 text-slate-400 font-semibold">Username</div>
+                    <div class="col-span-1 text-center text-slate-500">:</div>
+                    <div id="viewUsername" class="col-span-7 font-bold text-white tracking-wide text-sm"></div>
+                </div>
+
+                <div class="grid grid-cols-12 gap-1 items-baseline">
+                    <div class="col-span-4 text-slate-400 font-semibold">Nama Lengkap</div>
+                    <div class="col-span-1 text-center text-slate-500">:</div>
+                    <div id="viewNamaLengkap" class="col-span-7 font-bold text-slate-200"></div>
+                </div>
+
+                <div class="grid grid-cols-12 gap-1 items-baseline">
+                    <div class="col-span-4 text-slate-400 font-semibold">Password</div>
+                    <div class="col-span-1 text-center text-slate-500">:</div>
+                    <div id="viewPassword" class="col-span-7 font-mono text-slate-300 tracking-wider"></div>
+                </div>
+
+                <div class="grid grid-cols-12 gap-1 items-baseline">
+                    <div class="col-span-4 text-slate-400 font-semibold">Terakhir Login</div>
+                    <div class="col-span-1 text-center text-slate-500">:</div>
+                    <div id="viewTerakhirLogin" class="col-span-7 font-medium text-amber-400"></div>
+                </div>
+
+                <div class="grid grid-cols-12 gap-1 items-baseline">
+                    <div class="col-span-4 text-slate-400 font-semibold">Role Akses</div>
+                    <div class="col-span-1 text-center text-slate-500">:</div>
+                    <div id="viewRole" class="col-span-7 font-black uppercase tracking-wider text-[10px]"></div>
+                </div>
+
+                <div class="grid grid-cols-12 gap-1 items-center">
+                    <div class="col-span-4 text-slate-400 font-semibold">WhatsApp</div>
+                    <div class="col-span-1 text-center text-slate-500">:</div>
+                    <div class="col-span-7 flex items-center gap-3">
+                        <span id="viewNoHp" class="font-bold text-slate-200"></span>
+                        <a id="viewLinkWA" href="#" target="_blank" class="bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-800/60 px-2 py-0.5 rounded-md text-[9px] font-black transition active:scale-95 flex items-center gap-1">
+                            💬 Chat
+                        </a>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-12 gap-1 items-baseline">
+                    <div class="col-span-4 text-slate-400 font-semibold">Alamat</div>
+                    <div class="col-span-1 text-center text-slate-500">:</div>
+                    <div id="viewAlamat" class="col-span-7 text-slate-300 leading-relaxed whitespace-pre-line font-medium"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalFormUser" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden justify-center items-center p-4">
+        <div class="bg-slate-800 border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl transform scale-95 opacity-0 transition-all duration-200" id="modalFormContent">
+            
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3 mb-4">
+                <h3 id="formModalTitle" class="text-sm font-black text-white flex items-center gap-2">
+                    <span>📝</span> Kelola Informasi Pengguna
+                </h3>
+                <button onclick="tutupModalFormUser()" class="text-slate-400 hover:text-white text-lg font-bold focus:outline-none">✕</button>
+            </div>
+
+            <form id="formUser" class="space-y-4">
+                <input type="hidden" id="editOriginalUsername" value="">
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Username</label>
+                        <input type="text" id="usernameInput" placeholder="budi123" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-blue-500 text-white transition" required autocomplete="off" autocapitalize="none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Nama Lengkap</label>
+                        <input type="text" id="namaLengkapInput" placeholder="Budi Satria" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-blue-500 text-white transition" required autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Password</label>
+                        <input type="text" id="passwordInput" placeholder="Ketik password" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-blue-500 text-white transition" required autocomplete="off">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">No. WhatsApp</label>
+                        <input type="number" id="noHpInput" placeholder="0812345..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-blue-500 text-white transition" autocomplete="off">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Hak Akses (Role)</label>
+                    <select id="roleInput" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-blue-500 text-white transition">
+                        <option value="customer">Customer</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Alamat Pengiriman Lengkap</label>
+                    <textarea id="alamatInput" rows="2" placeholder="Tulis alamat rumah lengkap..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-blue-500 text-white transition resize-none"></textarea>
+                </div>
+
+                <button type="submit" id="btnSubmitModal" class="w-full bg-blue-600 text-white text-xs font-bold py-3 rounded-xl hover:bg-blue-700 active:scale-95 transition-all shadow-md shadow-blue-600/20 mt-1">
+                    Simpan Perubahan ke Firebase ➔
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAz9WumMNc97Ul-QnONh5rI0hKXh5ZelRY",
+            authDomain: "toko-aa-ef6aa.firebaseapp.com",
+            databaseURL: "https://toko-aa-ef6aa-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "toko-aa-ef6aa",
+            storageBucket: "toko-aa-ef6aa.firebasestorage.app",
+            messagingSenderId: "923877778887",
+            appId: "1:923877778887:web:5eaf71243d582049c825e2"
+        };
+
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        const dbAdmin = firebase.database();
+
+        let localMasterUsers = []; 
+        let localFilteredUsers = []; 
+        let roleAktifAdmin = "Semua";
+
+        let halamanKe = 1;
+        const limitBarisPerPemuatan = 12; 
+        let penandaDataHabis = false;
+
+        // UPGRADE: Fungsi hitung selisih waktu digital (Relative Time-Ago)
+        function formatWaktuLalu(timestampString) {
+            if (!timestampString || timestampString === "-") return "Tidak pernah aktif";
+            try {
+                const targetWaktu = new Date(timestampString.replace(/-/g, '/'));
+                const sekarang = new Date();
+                const selisihDetik = Math.floor((sekarang - targetWaktu) / 1000);
+
+                if (selisihDetik < 60) return "🟢 Sedang Online";
+                
+                const selisihMenit = Math.floor(selisihDetik / 60);
+                if (selisihMenit < 60) return `⚡ ${selisihMenit} menit lalu`;
+                
+                const selisihJam = Math.floor(selisihMenit / 60);
+                if (selisihJam < 24) return `🕒 ${selisihJam} jam lalu`;
+                
+                const selisihHari = Math.floor(selisihJam / 24);
+                if (selisihHari === 1) return "📅 Kemarin";
+                if (selisihHari < 7) return `📅 ${selisihHari} hari lalu`;
+
+                return timestampString; // Tampilkan teks format jam default jika sudah lama
+            } catch (e) {
+                return timestampString;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('isLoggedIn') !== 'true' || localStorage.getItem('userRole') !== 'admin') {
+                window.location.href = '../index.html'; return;
+            }
+
+            document.getElementById('btn-logout-admin')?.addEventListener('click', () => {
+                if (confirm('Apakah Anda yakin ingin keluar dari Panel Admin?')) {
+                    localStorage.clear(); window.location.href = '../index.html';
+                }
+            });
+
+            dbAdmin.ref('users').on('value', (snapshot) => {
+                const dataCloud = snapshot.val() || {};
+                localMasterUsers = Object.keys(dataCloud).map(key => {
+                    return {
+                        username: key,
+                        nama: dataCloud[key].nama || key, 
+                        password: dataCloud[key].password || '',
+                        noHp: dataCloud[key].noHp || '',
+                        alamat: dataCloud[key].alamat || '-',
+                        role: dataCloud[key].role || 'customer',
+                        lastActive: dataCloud[key].lastActive || '-' // UPGRADE: Menangkap data stamp dari cloud
+                    };
+                });
+                eksekusiPenyaringanDataTabel();
+            });
+
+            // Re-render berkala setiap 30 detik untuk memperbarui status "menit lalu" secara live
+            setInterval(() => {
+                const tbody = document.getElementById('tabelUserBody');
+                if (tbody && localFilteredUsers.length > 0) {
+                    tbody.innerHTML = '';
+                    halamanKe = 1;
+                    renderPotonganBarisTabel();
+                }
+            }, 30000);
+
+            const kontainerScrollTabel = document.getElementById('tabelScrollContainer');
+            kontainerScrollTabel?.addEventListener('scroll', () => {
+                if (penandaDataHabis) return;
+                const sTop = kontainerScrollTabel.scrollTop;
+                const sHeight = kontainerScrollTabel.scrollHeight;
+                const cHeight = kontainerScrollTabel.clientHeight;
+
+                if (sHeight - sTop - cHeight < 50) {
+                    penandaDataHabis = true;
+                    const loader = document.getElementById('adminScrollLoader');
+                    if (loader && halamanKe * limitBarisPerPemuatan <= localFilteredUsers.length) {
+                        loader.classList.remove('hidden');
+                    }
+
+                    setTimeout(() => {
+                        if (loader) loader.classList.add('hidden');
+                        penandaDataHabis = false;
+                        renderPotonganBarisTabel();
+                    }, 200);
+                }
+            });
+
+            const form = document.getElementById('formUser');
+            form?.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const originalUsername = document.getElementById('editOriginalUsername').value;
+                const inputUsername = document.getElementById('usernameInput').value.trim().toLowerCase();
+                const inputNama = document.getElementById('namaLengkapInput').value.trim();
+                const inputPassword = document.getElementById('passwordInput').value.trim();
+                const inputNoHp = document.getElementById('noHpInput').value.trim();
+                const inputRole = document.getElementById('roleInput').value;
+                const inputAlamat = document.getElementById('alamatInput').value.trim();
+
+                if (inputUsername === "") return;
+
+                // Mempertahankan data lastActive yang sudah ada saat diedit admin
+                const dataLama = localMasterUsers.find(u => u.username === inputUsername);
+                const waktuLama = dataLama ? dataLama.lastActive : '-';
+
+                const payload = {
+                    nama: inputNama,
+                    password: inputPassword,
+                    noHp: inputNoHp,
+                    role: inputRole,
+                    alamat: inputAlamat,
+                    lastActive: waktuLama
+                };
+
+                if (originalUsername !== "" && originalUsername !== inputUsername) {
+                    dbAdmin.ref('users/' + originalUsername).remove();
+                }
+
+                dbAdmin.ref('users/' + inputUsername).set(payload, (error) => {
+                    if (!error) {
+                        tutupModalFormUser();
+                        showToastNotification(originalUsername !== "" ? "Data user berhasil diperbarui!" : "User baru sukses didaftarkan!");
+                    } else {
+                        alert('Gagal menyinkronkan data.');
+                    }
+                });
+            });
+        });
+
+        function showToastNotification(pesan) {
+            const toast = document.getElementById('toastAlert');
+            const msgSpan = document.getElementById('toastMessage');
+            if (!toast || !msgSpan) return;
+
+            msgSpan.innerText = pesan;
+            toast.classList.remove('translate-y-[-20px]', 'opacity-0', 'pointer-events-none');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-[-20px]', 'opacity-0', 'pointer-events-none');
+            }, 2000);
+        }
+
+        function setFilterRoleAdmin(role) {
+            roleAktifAdmin = role;
+            const semuaTab = ['Semua', 'admin', 'customer'];
+            semuaTab.forEach(t => {
+                const el = document.getElementById(`tab-${t}`);
+                if (el) {
+                    el.className = t === role 
+                        ? "px-3 py-1.5 rounded-lg text-xs font-bold transition flex-shrink-0 bg-blue-600 text-white"
+                        : "px-3 py-1.5 rounded-lg text-xs font-bold transition flex-shrink-0 bg-slate-900 text-slate-400 hover:text-white";
+                }
+            });
+            eksekusiPenyaringanDataTabel();
+        }
+
+        function eksekusiPenyaringanDataTabel() {
+            localFilteredUsers = localMasterUsers.filter(user => {
+                if (!user) return false;
+                if (roleAktifAdmin === "Semua") return true;
+                return user.role === roleAktifAdmin;
+            });
+
+            localFilteredUsers.sort((a, b) => {
+                return a.username.localeCompare(b.username, 'id', { sensitivity: 'base' });
+            });
+
+            const tbody = document.getElementById('tabelUserBody');
+            if (tbody) tbody.innerHTML = '';
+            halamanKe = 1;
+            penandaDataHabis = false;
+            renderPotonganBarisTabel();
+        }
+
+        function renderPotonganBarisTabel() {
+            const tbody = document.getElementById('tabelUserBody');
+            if (!tbody) return;
+
+            if (localFilteredUsers.length === 0) {
+                penandaDataHabis = true;
+                tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-slate-500 italic">Tidak ada data pengguna di kategori ini.</td></tr>`;
+                return;
+            }
+
+            const mulai = (halamanKe - 1) * limitBarisPerPemuatan;
+            const selesai = mulai + limitBarisPerPemuatan;
+
+            if (mulai >= localFilteredUsers.length) {
+                penandaDataHabis = true; return;
+            }
+
+            const potonganData = localFilteredUsers.slice(mulai, selesai);
+
+            potonganData.forEach((user) => {
+                const badgeRoleColor = user.role === 'admin' ? 'bg-purple-950/50 text-purple-400 border-purple-800/40' : 'bg-blue-950/50 text-blue-400 border-blue-800/40';
+                
+                // UPGRADE: Hitung teks waktu lalu
+                const stringStatusAktif = formatWaktuLalu(user.lastActive);
+                const warnaStatusText = stringStatusAktif.includes("🟢") ? "text-emerald-400 font-bold" : "text-slate-400";
+
+                const barisHTML = `
+                    <tr onclick="bukaModalRincianUser('${user.username}')" class="hover:bg-slate-700/30 transition border-b border-slate-700/40 cursor-pointer">
+                        <td class="py-3 font-bold text-white pl-3 tracking-wide leading-tight">
+                            <div class="text-slate-200">${user.username}</div>
+                            <div class="text-[10px] text-slate-400 font-medium truncate max-w-[150px]">${user.nama}</div>
+                        </td>
+                        <td class="py-3 font-medium text-[11px] ${warnaStatusText}">${stringStatusAktif}</td>
+                        <td class="py-3 text-center">
+                            <span class="px-2 py-0.5 rounded-md text-[9px] font-black uppercase border ${badgeRoleColor}">
+                                ${user.role}
+                            </span>
+                        </td>
+                        <td class="py-3 text-center flex items-center justify-center gap-1.5 mt-1" onclick="event.stopPropagation();">
+                            <button onclick="bukaModalFormUser(true, '${user.username}')" class="bg-blue-950/40 text-blue-400 hover:bg-blue-600 hover:text-white px-2.5 py-1 rounded-lg text-[10px] font-black transition active:scale-90 border border-blue-100/10">
+                                Edit
+                            </button>
+                            <button onclick="hapusUserAdmin('${user.username}')" class="bg-red-950/30 text-red-400 hover:bg-red-600 hover:text-white px-2.5 py-1 rounded-lg text-[10px] font-black transition active:scale-90 border border-red-100/10">
+                                Hapus
+                            </button>
+                        </td>
+                    </tr>`;
+                tbody.insertAdjacentHTML('beforeend', barisHTML);
+            });
+            halamanKe++;
+        }
+
+        // POPUP A: RINCIAN DETAIL VIEW ONLY
+        window.bukaModalRincianUser = function(usernameKey) {
+            const user = localMasterUsers.find(u => u.username === usernameKey);
+            if (!user) return;
+
+            document.getElementById('viewUsername').innerText = user.username;
+            document.getElementById('viewNamaLengkap').innerText = user.nama;
+            document.getElementById('viewPassword').innerText = user.password; 
+            document.getElementById('viewRole').innerText = user.role;
+            
+            // UPGRADE: Memasukkan jam asli ke info detail popup
+            document.getElementById('viewTerakhirLogin').innerText = user.lastActive === "-" ? "Belum pernah masuk aplikasi" : user.lastActive;
+            
+            document.getElementById('viewNoHp').innerText = user.noHp || '-';
+            document.getElementById('viewAlamat').innerText = user.alamat === "-" ? "Belum mengatur alamat." : user.alamat;
+
+            const elRole = document.getElementById('viewRole');
+            elRole.className = user.role === 'admin' ? "font-black uppercase tracking-wider text-[10px] text-purple-400" : "font-black uppercase tracking-wider text-[10px] text-blue-400";
+
+            const linkWA = document.getElementById('viewLinkWA');
+            if (user.noHp && user.noHp !== "") {
+                let formattedNo = user.noHp.toString().trim();
+                if (formattedNo.startsWith('0')) formattedNo = '62' + formattedNo.slice(1);
+                linkWA.href = `https://wa.me/${formattedNo}`;
+                linkWA.style.display = 'flex';
+            } else {
+                linkWA.style.display = 'none';
+            }
+
+            const modal = document.getElementById('modalRincianUser');
+            const content = document.getElementById('modalRincianContent');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+            setTimeout(() => { content.classList.remove('scale-95', 'opacity-0'); content.classList.add('scale-100', 'opacity-100'); }, 20);
+        }
+
+        window.tutupModalFormUser = function() {
+            const modal = document.getElementById('modalFormUser');
+            const content = document.getElementById('modalFormContent');
+            content.classList.remove('scale-100', 'opacity-100'); content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { modal.classList.remove('flex'); modal.classList.add('hidden'); }, 180);
+        }
+
+        window.tutupModalRincianUser = function() {
+            const modal = document.getElementById('modalRincianUser');
+            const content = document.getElementById('modalRincianContent');
+            content.classList.remove('scale-100', 'opacity-100'); content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { modal.classList.remove('flex'); modal.classList.add('hidden'); }, 180);
+        }
+
+        // POPUP B: MODAL FORM INPUT
+        window.bukaModalFormUser = function(isEditMode = false, usernameKey = null) {
+            const modal = document.getElementById('modalFormUser');
+            const content = document.getElementById('modalFormContent');
+            const form = document.getElementById('formUser');
+            
+            form.reset(); 
+
+            if (isEditMode && usernameKey !== null) {
+                const user = localMasterUsers.find(u => u.username === usernameKey);
+                document.getElementById('formModalTitle').innerHTML = `<span>📝</span> Edit Akun User`;
+                document.getElementById('btnSubmitModal').innerText = "Simpan Pembaruan ➔";
+                
+                document.getElementById('editOriginalUsername').value = user.username;
+                document.getElementById('usernameInput').value = user.username;
+                document.getElementById('namaLengkapInput').value = user.nama;
+                document.getElementById('passwordInput').value = user.password;
+                document.getElementById('noHpInput').value = user.noHp;
+                document.getElementById('roleInput').value = user.role;
+                document.getElementById('alamatInput').value = user.alamat === "-" ? "" : user.alamat;
+            } else {
+                document.getElementById('formModalTitle').innerHTML = `<span>➕</span> Daftarkan User Baru`;
+                document.getElementById('btnSubmitModal').innerText = "Simpan Baru ➔";
+                document.getElementById('editOriginalUsername').value = "";
+            }
+
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+            setTimeout(() => { content.classList.remove('scale-95', 'opacity-0'); content.classList.add('scale-100', 'opacity-100'); }, 20);
+        }
+
+        window.hapusUserAdmin = function(usernameKey) {
+            if (usernameKey === 'admin') {
+                alert('Akun master super-root "admin" tidak boleh dihapus!'); return;
+            }
+            if (confirm(`Apakah Anda yakin ingin menghapus user "${usernameKey}"?`)) {
+                dbAdmin.ref('users/' + usernameKey).remove()
+                    .then(() => showToastNotification("Data pengguna berhasil dihapus!"));
+            }
+        }
+    </script>
+</body>
+</html>

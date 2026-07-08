@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Struk Digital - Toko AA</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        /* Gaya khusus untuk mode cetak printer thermal (Lebar 58mm / 80mm) */
+        @media print {
+            body {
+                background-color: white;
+                color: black;
+                font-size: 12px;
+                padding: 0;
+                margin: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-area {
+                box-shadow: none !important;
+                border: none !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 font-sans min-h-screen flex flex-col items-center justify-center p-4">
+
+    <div id="invoice-card" class="bg-white w-full max-w-md rounded-2xl shadow-md border border-slate-200/60 p-6 print-area relative">
+        
+        <div id="loading-state" class="absolute inset-0 bg-white/95 rounded-2xl flex flex-col items-center justify-center gap-3 z-50">
+            <span class="animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></span>
+            <p class="text-xs font-bold text-slate-500">Menarik data dari cloud Firebase...</p>
+        </div>
+
+        <div id="error-state" class="absolute inset-0 bg-white rounded-2xl hidden flex-col items-center justify-center text-center p-6 z-50">
+            <span class="text-4xl mb-2">❌</span>
+            <h3 class="font-bold text-slate-800 text-sm">Data Pesanan Tidak Ditemukan</h3>
+            <p class="text-xs text-slate-400 mt-1 max-w-xs">ID Pesanan salah atau data mungkin sudah dihapus dari sistem database cloud.</p>
+        </div>
+
+        <div class="text-center space-y-1 mb-4">
+            <h1 class="text-lg font-black text-slate-800 tracking-tight">🛍️ TOKO AA</h1>
+            <p class="text-[11px] text-slate-400 font-medium">Jl. Raya Utama, Cigombong, Bogor, Jawa Barat</p>
+            <p class="text-[11px] text-slate-400 font-medium">WhatsApp: 085782923546</p>
+            <div class="border-b border-dashed border-slate-300 pt-3"></div>
+        </div>
+
+        <div class="space-y-2 text-xs text-slate-700 mb-4 font-mono">
+            <div class="flex justify-between">
+                <span class="text-slate-400 font-sans font-semibold">ID PESANAN</span>
+                <span id="lbl-id-pesanan" class="font-bold text-slate-800">#AA-XXXX</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-slate-400 font-sans font-semibold">WAKTU</span>
+                <span id="lbl-waktu" class="text-slate-600">YYYY-MM-DD HH:MM:SS</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-slate-400 font-sans font-semibold">PELANGGAN</span>
+                <span id="lbl-pelanggan" class="font-bold text-slate-800 capitalize">Nama Pelanggan</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-slate-400 font-sans font-semibold">NO. HANDPHONE</span>
+                <span id="lbl-nohp" class="text-slate-600">08xxxxxxx</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-slate-400 font-sans font-semibold">PENGAMBILAN</span>
+                <span id="lbl-metode" class="font-bold text-blue-600">Ambil / Kirim</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-slate-400 font-sans font-semibold">LEVEL PEDAS</span>
+                <span id="lbl-pedas" class="font-bold text-red-500">Lv. X</span>
+            </div>
+            <div class="flex justify-between items-baseline">
+                <span class="text-slate-400 font-sans font-semibold flex-shrink-0">CATATAN</span>
+                <span id="lbl-catatan" class="text-slate-600 text-right font-sans font-medium break-words max-w-[200px]">-</span>
+            </div>
+            <div class="border-b border-dashed border-slate-300 pt-2"></div>
+        </div>
+
+        <div class="mb-4">
+            <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 font-sans">Daftar Menu:</span>
+            
+            <div id="menu-items-list" class="space-y-3">
+                </div>
+            
+            <div class="border-b border-dashed border-slate-300 pt-4"></div>
+        </div>
+
+        <div class="space-y-3 font-mono">
+            <div class="flex justify-between items-baseline">
+                <span class="text-xs font-bold text-slate-500 font-sans">TOTAL BAYAR</span>
+                <span id="lbl-total-bayar" class="text-base font-black text-blue-600">Rp 0</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-xs font-bold text-slate-500 font-sans">STATUS</span>
+                <span id="lbl-status" class="text-[10px] bg-amber-100 text-amber-700 font-sans font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Pending ⏳</span>
+            </div>
+
+            <div id="box-alamat-pengiriman" class="hidden border-t border-slate-100 pt-3 font-sans">
+                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Alamat Pengiriman:</span>
+                <p id="lbl-alamat" class="text-xs text-slate-600 leading-normal font-medium break-words bg-slate-50 p-2.5 rounded-xl border border-slate-200/50"></p>
+            </div>
+        </div>
+
+        <div class="no-print mt-6 flex gap-2 pt-2 border-t border-slate-100">
+            <button onclick="window.print()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 rounded-xl transition shadow-md shadow-blue-600/10 active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer">
+                🖨️ Cetak Struk
+            </button>
+            <button onclick="window.close()" class="bg-slate-100 hover:bg-slate-200 text-slate-500 text-xs font-bold px-4 py-2.5 rounded-xl transition border border-slate-200/60 active:scale-95 cursor-pointer">
+                Tutup
+            </button>
+        </div>
+
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+
+    <script>
+        // ISI KONFIGURASI FIREBASE DI BAWAH INI SESUAI DENGAN KODE DATABASE TOKO AA ANDA
+        const firebaseConfig = {
+            databaseURL: "https://toko-aa-ef6aa-default-rtdb.asia-southeast1.firebasedatabase.app" // Sesuaikan dengan databaseURL milik Anda
+        };
+
+        // Inisialisasi Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const database = firebase.database();
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Membaca Parameter 'id' dari alamat URL web (?id=-NkB7y...)
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderKeyId = urlParams.get('id');
+
+            // Proteksi jika link tidak membawa kuncian ID
+            if (!orderKeyId) {
+                document.getElementById('loading-state').classList.add('hidden');
+                document.getElementById('error-state').classList.remove('hidden');
+                return;
+            }
+
+            // 2. Melakukan request penarikan data ke Firebase berdasarkan ID spesifik
+            database.ref('daftarPesanan').child(orderKeyId).once('value', (snapshot) => {
+                const dataPesanan = snapshot.val();
+
+                // Jika data tidak ditemukan di Firebase node
+                if (!dataPesanan) {
+                    document.getElementById('loading-state').classList.add('hidden');
+                    document.getElementById('error-state').classList.remove('hidden');
+                    return;
+                }
+
+                // 3. Pasang data utama ke elemen HTML masing-masing
+                document.getElementById('lbl-id-pesanan').innerText = dataPesanan.idPesanan || '-';
+                document.getElementById('lbl-waktu').innerText = dataPesanan.waktuPesanan || '-';
+                document.getElementById('lbl-pelanggan').innerText = dataPesanan.namaPelanggan || '-';
+                document.getElementById('lbl-nohp').innerText = dataPesanan.noHp || '-';
+                document.getElementById('lbl-metode').innerText = dataPesanan.metodePengambilan || '-';
+                document.getElementById('lbl-pedas').innerText = dataPesanan.tingkatKepedasan || '-';
+                document.getElementById('lbl-catatan').innerText = dataPesanan.keterangan || '-';
+                document.getElementById('lbl-total-bayar').innerText = `Rp ${(dataPesanan.totalBayar || 0).toLocaleString('id-ID')}`;
+
+                // Atur label status pesanan secara visual
+                const lblStatus = document.getElementById('lbl-status');
+                lblStatus.innerText = dataPesanan.status || 'Pending';
+                if (dataPesanan.status?.toLowerCase() === 'selesai') {
+                    lblStatus.className = "text-[10px] bg-emerald-100 text-emerald-700 font-sans font-bold px-2 py-0.5 rounded-full uppercase tracking-wider";
+                } else if (dataPesanan.status?.toLowerCase() === 'batal') {
+                    lblStatus.className = "text-[10px] bg-red-100 text-red-700 font-sans font-bold px-2 py-0.5 rounded-full uppercase tracking-wider";
+                }
+
+                // Tampilkan alamat rumah jika metode adalah Kurir / Kirim
+                if (dataPesanan.metodePengambilan?.toLowerCase() === 'kirim' && dataPesanan.alamatPengiriman !== '-') {
+                    document.getElementById('box-alamat-pengiriman').classList.remove('hidden');
+                    document.getElementById('lbl-alamat').innerText = dataPesanan.alamatPengiriman;
+                }
+
+                // 4. Render rincian daftar menu item yang dibeli pembeli
+                const containerMenu = document.getElementById('menu-items-list');
+                containerMenu.innerHTML = ''; // Kosongkan dummy text
+
+                if (dataPesanan.items && Array.isArray(dataPesanan.items)) {
+                    dataPesanan.items.forEach(item => {
+                        if (!item) return;
+                        
+                        const subTotalItem = item.harga * item.jumlah;
+                        const barisMenuHtml = `
+                            <div class="space-y-0.5">
+                                <p class="text-xs font-bold text-slate-800">${item.nama}</p>
+                                <div class="flex justify-between text-[11px] text-slate-500 font-mono">
+                                    <span>${item.jumlah} x Rp ${item.harga.toLocaleString('id-ID')}</span>
+                                    <span class="font-bold text-slate-700">Rp ${subTotalItem.toLocaleString('id-ID')}</span>
+                                </div>
+                            </div>
+                        `;
+                        containerMenu.insertAdjacentHTML('beforeend', barisMenuHtml);
+                    });
+                }
+
+                // Hilangkan layar loading setelah data terpasang semua
+                document.getElementById('loading-state').classList.add('hidden');
+            }, (error) => {
+                console.error("Gagal membaca Firebase database: ", error);
+                document.getElementById('loading-state').classList.add('hidden');
+                document.getElementById('error-state').classList.remove('hidden');
+            });
+        });
+    </script>
+</body>
+</html>

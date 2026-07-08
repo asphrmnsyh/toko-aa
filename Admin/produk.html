@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Panel Admin - Kelola Produk</title>
+    <script src="../tailwind.js"></script>
+    <style>
+        .scrollbar-none::-webkit-scrollbar { display: none; }
+        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+        th { position: sticky; top: 0; background-color: #1e293b; z-index: 10; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen h-screen flex flex-col md:flex-row select-none overflow-hidden">
+
+    <div id="toastAlert" class="fixed top-4 right-4 bg-emerald-600 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-2xl transition-all duration-300 transform translate-y-[-20px] opacity-0 pointer-events-none z-50 flex items-center gap-2">
+        <span>✅</span> <span id="toastMessage">Produk berhasil diperbarui!</span>
+    </div>
+
+    <aside class="w-full md:w-64 bg-slate-800 border-b md:border-b-0 md:border-r border-slate-700 p-6 flex flex-col justify-between flex-shrink-0 h-auto md:h-screen z-20">
+        <div>
+            <div class="mb-8 text-center md:text-left">
+                <h2 class="text-2xl font-black tracking-wider text-blue-500">ADMIN PANEL</h2>
+                <p class="text-xs text-slate-400 mt-1">Sistem Manajemen Toko AA</p>
+            </div>
+
+            <nav class="space-y-2 flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 gap-2 md:gap-0 scrollbar-none">
+                <a href="admin.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Dashboard Admin
+                </a>
+                <a href="produk.html" class="block bg-blue-600 text-white font-bold px-4 py-3 rounded-xl shadow transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Kelola Produk
+                </a>
+                <a href="user.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Kelola User
+                </a>
+                <a href="order.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Detail Pesanan
+                </a>
+                <a href="chart.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Grafik Penjualan
+                </a>
+                <a href="rekap.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Rekap & Laris
+                </a>
+                <a href="iklan.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Kelola Iklan Popup 📢
+                </a>
+            </nav>
+        </div>
+
+        <button id="btn-logout-admin" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition mt-4 md:mt-0 shadow-lg shadow-red-900/20 flex-shrink-0">
+            Keluar Panel
+        </button>
+    </aside>
+
+    <main class="flex-1 p-6 md:p-8 h-screen flex flex-col overflow-hidden relative">
+        
+        <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 mb-5 shadow-sm flex-shrink-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h1 class="text-xl font-extrabold text-white">Manajemen Etalase & Produk ⚡</h1>
+                <p class="text-xs text-slate-400 mt-0.5">Pantau stok, edit harga, dan kelola varian menu secara aman.</p>
+            </div>
+            <div class="relative w-full sm:w-64 flex-shrink-0">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 text-xs">🔍</span>
+                <input type="text" id="liveSearchInput" placeholder="Cari produk..." class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs focus:outline-none focus:border-blue-500 text-white transition placeholder-slate-500">
+            </div>
+        </div>
+
+        <div class="flex-1 bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-md flex flex-col overflow-hidden mb-2">
+            <div id="tabKategoriContainer" class="flex items-center gap-1.5 border-b border-slate-700 pb-3 mb-4 overflow-x-auto scrollbar-none flex-shrink-0"></div>
+
+            <div id="tabelScrollContainer" class="flex-1 overflow-y-auto pr-1 text-slate-300">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-700 text-[10px] font-black text-slate-500 uppercase tracking-wider">
+                            <th class="pb-3 pt-1 pl-2">Nama Produk</th>
+                            <th class="pb-3 pt-1">Kategori</th>
+                            <th class="pb-3 pt-1 text-center w-20">Stok</th>
+                            <th class="pb-3 pt-1 text-right pr-4">Harga</th>
+                            <th class="pb-3 pt-1 text-center w-36">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelProdukBody" class="divide-y divide-slate-700/40 text-xs"></tbody>
+                </table>
+                <div id="adminScrollLoader" class="text-center py-3 text-[11px] text-slate-500 font-medium hidden">🔄 Memuat data selanjutnya...</div>
+            </div>
+        </div>
+
+        <button onclick="bukaModalPopupProduk(false)" class="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center text-2xl font-black shadow-2xl transition transform hover:scale-105 active:scale-95 z-30 border border-blue-500">＋</button>
+    </main>
+
+    <div id="modalProduk" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden justify-center items-center p-4">
+        <div class="bg-slate-800 border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl transform scale-95 opacity-0 transition-all duration-200" id="modalContent">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3 mb-4">
+                <h3 id="modalTitle" class="text-sm font-black text-white flex items-center gap-2"><span>📝</span> Kelola Informasi Produk</h3>
+                <button type="button" onclick="tutupModalPopupProduk()" class="text-slate-400 hover:text-white text-lg font-bold focus:outline-none">✕</button>
+            </div>
+
+            <form id="formProduk" class="space-y-4">
+                <input type="hidden" id="editItemFirebaseKey" value="">
+
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Nama Menu</label>
+                    <input type="text" id="namaProduk" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-blue-500 text-white transition" required autocomplete="off">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Harga (Rp)</label>
+                        <input type="number" id="hargaProduk" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-blue-500 text-white transition" required autocomplete="off">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Stok Gudang</label>
+                        <input type="number" id="stokProduk" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-blue-500 text-white transition" required autocomplete="off">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Kategori</label>
+                    <div class="flex gap-2">
+                        <select id="kategoriProduk" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-blue-500 text-white transition"></select>
+                        <button type="button" onclick="tambahKategoriDinamis()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold px-3 rounded-xl border border-slate-600 transition active:scale-95">+ Baru</button>
+                        <button type="button" onclick="hapusKategoriDinamis()" class="bg-red-950/40 text-red-400 border border-red-900/40 hover:bg-red-600 hover:text-white px-2 rounded-xl transition active:scale-95">🗑️</button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Foto Produk</label>
+                    <div class="flex items-center gap-3 bg-slate-900 border border-slate-700 rounded-xl p-2.5">
+                        <label class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg flex items-center justify-center text-sm transition active:scale-95 select-none">
+                            📷 <span class="text-xs font-bold ml-1.5">Pilih File</span>
+                            <input type="file" id="uploadFileFoto" accept="image/*" class="hidden" onchange="prosesKonversiBase64(this)">
+                        </label>
+                        <div class="flex-1 overflow-hidden">
+                            <span id="labelNamaFile" class="text-[10px] text-slate-400 block truncate">Belum ada foto terpilih</span>
+                        </div>
+                        <div class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 overflow-hidden flex items-center justify-center flex-shrink-0">
+                            <img id="previewBase64Img" src="" class="w-full h-full object-cover hidden">
+                            <span id="placeholderPreview" class="text-slate-600 text-[10px]">❌</span>
+                        </div>
+                    </div>
+                    <input type="hidden" id="stringBase64Container" value="">
+                </div>
+
+                <button type="submit" id="btnSubmitModal" class="w-full bg-blue-600 text-white text-xs font-bold py-3 rounded-xl hover:bg-blue-700 active:scale-95 transition-all shadow-md shadow-blue-600/20 mt-2">Simpan Perubahan ke Cloud ➔</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAz9WumMNc97Ul-QnONh5rI0hKXh5ZelRY",
+            authDomain: "toko-aa-ef6aa.firebaseapp.com",
+            databaseURL: "https://toko-aa-ef6aa-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "toko-aa-ef6aa",
+            storageBucket: "toko-aa-ef6aa.firebasestorage.app",
+            messagingSenderId: "923877778887",
+            appId: "1:923877778887:web:5eaf71243d582049c825e2"
+        };
+
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        const dbAdmin = firebase.database();
+
+        let localMasterProducts = []; 
+        let localFilteredProducts = []; 
+        let listKategoriLokal = []; 
+        let kategoriAktifAdmin = "Semua";
+        let kataKunciPencarian = ""; 
+
+        let halamanKe = 1;
+        const limitBarisPerPemuatan = 12; 
+        let penandaDataHabis = false;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('isLoggedIn') !== 'true' || localStorage.getItem('userRole') !== 'admin') {
+                window.location.href = '../index.html'; return;
+            }
+
+            document.getElementById('btn-logout-admin')?.addEventListener('click', () => {
+                if (confirm('Apakah Anda yakin ingin keluar dari Panel Admin?')) {
+                    localStorage.clear(); window.location.href = '../index.html';
+                }
+            });
+
+            document.getElementById('liveSearchInput')?.addEventListener('input', (e) => {
+                kataKunciPencarian = e.target.value.toLowerCase().trim();
+                eksekusiPenyaringanDataTabel();
+            });
+
+            // REALTIME SINKRONISASI (Super Ringan tanpa mengunduh data Gambar)
+            dbAdmin.ref('databaseMenu').on('value', (snapshot) => {
+                localMasterProducts = [];
+                let kategoriDariProduk = [];
+
+                snapshot.forEach((childSnapshot) => {
+                    const data = childSnapshot.val();
+                    if (data) {
+                        const itemObj = {
+                            firebaseKey: childSnapshot.key, 
+                            id: data.id || Date.now(),
+                            nama: data.nama || "",
+                            harga: parseInt(data.harga) || 0,
+                            stok: parseInt(data.stok) || 0,
+                            kategori: data.kategori ? data.kategori.trim().toLowerCase() : "umum",
+                            gambar: data.gambar || "" // Tetap baca jika ada data gambar lama tersemat
+                        };
+                        localMasterProducts.push(itemObj);
+
+                        if (itemObj.kategori && !kategoriDariProduk.includes(itemObj.kategori)) {
+                            kategoriDariProduk.push(itemObj.kategori);
+                        }
+                    }
+                });
+                
+                listKategoriLokal = kategoriDariProduk;
+                if (kategoriAktifAdmin !== "Semua" && !listKategoriLokal.includes(kategoriAktifAdmin)) {
+                    kategoriAktifAdmin = "Semua";
+                }
+
+                renderTabKategoriDinamis();
+                eksekusiPenyaringanDataTabel();
+            });
+
+            // PROSES SIMPAN / UPDATE DENGAN NODE TERPISAH
+            document.getElementById('formProduk')?.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const keyTarget = document.getElementById('editItemFirebaseKey').value;
+                const nama = document.getElementById('namaProduk').value.trim();
+                const harga = parseInt(document.getElementById('hargaProduk').value.trim()) || 0;
+                const stok = parseInt(document.getElementById('stokProduk').value.trim()) || 0;
+                const kategori = document.getElementById('kategoriProduk').value || "umum";
+                const stringBase64 = document.getElementById('stringBase64Container').value;
+
+                let objekDataMenu = {};
+                let targetKeyHasil = keyTarget;
+                let refMenu;
+
+                if (keyTarget && keyTarget !== "") {
+                    const produkLama = localMasterProducts.find(p => p.firebaseKey === keyTarget);
+                    objekDataMenu = {
+                        id: produkLama ? (parseInt(produkLama.id) || Date.now()) : Date.now(),
+                        nama: nama,
+                        harga: harga,
+                        stok: stok,
+                        kategori: kategori
+                    };
+                    refMenu = dbAdmin.ref('databaseMenu/' + keyTarget);
+                } else {
+                    const newId = localMasterProducts.length > 0 ? Math.max(...localMasterProducts.map(p => parseInt(p.id) || 0)) + 1 : 1;
+                    objekDataMenu = {
+                        id: newId,
+                        nama: nama,
+                        harga: harga,
+                        stok: stok,
+                        kategori: kategori
+                    };
+                    const refBaru = dbAdmin.ref('databaseMenu').push();
+                    targetKeyHasil = refBaru.key;
+                    refMenu = refBaru;
+                }
+
+                refMenu.set(objekDataMenu, (error) => {
+                    if (!error) {
+                        // Simpan Gambar Terpisah ke databaseGambar
+                        if (stringBase64 && stringBase64 !== "") {
+                            dbAdmin.ref('databaseGambar/' + targetKeyHasil).set({ gambar: stringBase64 });
+                        }
+                        tutupModalPopupProduk();
+                        showToastNotification(keyTarget !== "" ? "Produk berhasil diperbarui!" : "Produk baru berhasil ditambahkan!");
+                    } else {
+                        alert('Gagal menyimpan teks menu: ' + error.message);
+                    }
+                });
+            });
+
+            // INFINITE SCROLL DETECTION
+            const kontainerScrollTabel = document.getElementById('tabelScrollContainer');
+            kontainerScrollTabel?.addEventListener('scroll', () => {
+                if (penandaDataHabis) return;
+                if (kontainerScrollTabel.scrollHeight - kontainerScrollTabel.scrollTop - kontainerScrollTabel.clientHeight < 50) {
+                    penandaDataHabis = true;
+                    const loader = document.getElementById('adminScrollLoader');
+                    if (loader && halamanKe * limitBarisPerPemuatan <= localFilteredProducts.length) {
+                        loader.classList.remove('hidden');
+                    }
+                    setTimeout(() => {
+                        if (loader) loader.classList.add('hidden');
+                        penandaDataHabis = false;
+                        renderPotonganBarisTabel();
+                    }, 200);
+                }
+            });
+        });
+
+        function showToastNotification(pesan) {
+            const toast = document.getElementById('toastAlert');
+            const msgSpan = document.getElementById('toastMessage');
+            if (!toast || !msgSpan) return;
+            msgSpan.innerText = pesan;
+            toast.classList.remove('translate-y-[-20px]', 'opacity-0', 'pointer-events-none');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-[-20px]', 'opacity-0', 'pointer-events-none');
+            }, 2000);
+        }
+
+        window.prosesKonversiBase64 = function(inputElement) {
+    const file = inputElement.files[0];
+    const label = document.getElementById('labelNamaFile');
+    const preview = document.getElementById('previewBase64Img');
+    const placeholder = document.getElementById('placeholderPreview');
+    const containerBase64 = document.getElementById('stringBase64Container');
+
+    if (!file) return;
+    label.innerText = file.name;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // --- MODIFIKASI DI SINI ---
+            const MAX_WIDTH = 600; // Dinaikkan dari 180 ke 600 agar jauh lebih tajam
+            let width = img.width, height = img.height;
+
+            if (width > MAX_WIDTH) {
+                height *= MAX_WIDTH / width; width = MAX_WIDTH;
+            }
+            canvas.width = width; canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // Kualitas dinaikkan ke 0.8 (80%) agar tidak pecah/artifacting
+            const finalBase64 = canvas.toDataURL('image/jpeg', 0.8); 
+            // ---------------------------
+            
+            containerBase64.value = finalBase64;
+            preview.src = finalBase64;
+            preview.classList.remove('hidden');
+            placeholder.classList.add('hidden');
+        };
+    };
+    reader.readAsDataURL(file);
+}
+
+        window.tambahKategoriDinamis = function() {
+            const kategoriBaru = prompt("Masukkan nama kategori baru:");
+            if (!kategoriBaru) return;
+            const bersih = kategoriBaru.replace(/[^\w\s]/gi, '').trim().toLowerCase();
+            if (bersih === "") return;
+            if (!listKategoriLokal.includes(bersih)) { listKategoriLokal.push(bersih); }
+            renderSelectOptionsKategori();
+            document.getElementById('kategoriProduk').value = bersih;
+        }
+
+        window.hapusKategoriDinamis = function() {
+            const selectValue = document.getElementById('kategoriProduk').value;
+            if (!selectValue) return;
+            if (localMasterProducts.some(p => p && p.kategori === selectValue)) {
+                alert(`Kategori "${selectValue}" sedang digunakan oleh produk aktif!`); return;
+            }
+            if (confirm(`Apakah Anda yakin ingin menghapus kategori manual "${selectValue}"?`)) {
+                listKategoriLokal = listKategoriLokal.filter(k => k !== selectValue);
+                if (kategoriAktifAdmin === selectValue) kategoriAktifAdmin = "Semua";
+                renderSelectOptionsKategori();
+                renderTabKategoriDinamis();
+                eksekusiPenyaringanDataTabel();
+            }
+        }
+
+        function renderSelectOptionsKategori() {
+            const select = document.getElementById('kategoriProduk');
+            if (!select) return; select.innerHTML = '';
+            listKategoriLokal.forEach(kat => { select.innerHTML += `<option value="${kat}">${kat}</option>`; });
+            if(listKategoriLokal.length === 0) { select.innerHTML = `<option value="umum">umum</option>`; }
+        }
+
+        function renderTabKategoriDinamis() {
+            const container = document.getElementById('tabKategoriContainer');
+            if (!container) return;
+            container.innerHTML = `<button onclick="setFilterKategoriAdmin('Semua')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex-shrink-0 ${kategoriAktifAdmin === 'Semua' ? 'bg-blue-600 text-white' : 'bg-slate-900 text-slate-400 hover:text-white'}">Semua</button>`;
+            listKategoriLokal.forEach(kat => {
+                const isActive = kategoriAktifAdmin === kat;
+                container.innerHTML += `<button onclick="setFilterKategoriAdmin('${kat}')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex-shrink-0 capitalize ${isActive ? 'bg-blue-600 text-white' : 'bg-slate-900 text-slate-400 hover:text-white'}">${kat}</button>`;
+            });
+        }
+
+        function setFilterKategoriAdmin(kategori) {
+            kategoriAktifAdmin = kategori;
+            renderTabKategoriDinamis();
+            eksekusiPenyaringanDataTabel();
+        }
+
+        function eksekusiPenyaringanDataTabel() {
+            localFilteredProducts = localMasterProducts.filter(prod => {
+                const cocokKategori = (kategoriAktifAdmin === "Semua" || prod.kategori === kategoriAktifAdmin);
+                const cocokPencarian = !kataKunciPencarian || (prod.nama && prod.nama.toLowerCase().includes(kataKunciPencarian));
+                return cocokKategori && cocokPencarian;
+            });
+            localFilteredProducts.sort((a, b) => a.nama.localeCompare(b.nama, 'id', { sensitivity: 'base' }));
+            const tbody = document.getElementById('tabelProdukBody');
+            if (tbody) tbody.innerHTML = '';
+            halamanKe = 1; penandaDataHabis = false;
+            renderPotonganBarisTabel();
+        }
+
+        function renderPotonganBarisTabel() {
+            const tbody = document.getElementById('tabelProdukBody');
+            if (!tbody) return;
+            if (localFilteredProducts.length === 0) {
+                penandaDataHabis = true;
+                tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-500 italic">Tidak ada produk ditemukan.</td></tr>`;
+                return;
+            }
+            const mulai = (halamanKe - 1) * limitBarisPerPemuatan;
+            const selesai = mulai + limitBarisPerPemuatan;
+            if (mulai >= localFilteredProducts.length) { penandaDataHabis = true; return; }
+
+            const potonganData = localFilteredProducts.slice(mulai, selesai);
+            potonganData.forEach((prod) => {
+                const barisHTML = `
+                    <tr class="hover:bg-slate-700/30 transition border-b border-slate-700/40">
+                        <td class="py-3 font-bold text-white pl-2 leading-tight">${prod.nama}</td>
+                        <td class="py-3 text-slate-500 font-medium text-[10px] md:text-[11px] capitalize">${prod.kategori || 'umum'}</td>
+                        <td class="py-3 text-center font-mono font-bold ${prod.stok <= 0 ? 'text-red-400 bg-red-950/40 rounded-md px-2 py-0.5' : 'text-slate-300'}">${prod.stok}</td>
+                        <td class="py-3 text-right font-black text-blue-400 pr-4">Rp ${prod.harga.toLocaleString('id-ID')}</td>
+                        <td class="py-3 text-center flex items-center justify-center gap-1.5">
+                            <button onclick="bukaModalPopupProduk(true, '${prod.firebaseKey}')" class="bg-blue-950/40 text-blue-400 hover:bg-blue-600 hover:text-white px-2.5 py-1 rounded-lg text-[10px] font-black transition active:scale-90 border border-blue-100/10">Edit</button>
+                            <button onclick="hapusMenuAdmin('${prod.firebaseKey}')" class="bg-red-950/30 text-red-400 hover:bg-red-600 hover:text-white px-2.5 py-1 rounded-lg text-[10px] font-black transition active:scale-90 border border-red-100/10">Hapus</button>
+                        </td>
+                    </tr>`;
+                tbody.insertAdjacentHTML('beforeend', barisHTML);
+            });
+            halamanKe++;
+        }
+
+        // AMBIL DATA GAMBAR SECARA TERPISAH HANYA SAAT TOMBOL EDIT DIKLIK (DENGAN COCOK AUTOMATIC FALLBACK)
+        window.bukaModalPopupProduk = function(isEditMode = false, targetKey = null) {
+            const modal = document.getElementById('modalProduk');
+            const content = document.getElementById('modalContent');
+            const form = document.getElementById('formProduk');
+            
+            form.reset(); 
+            renderSelectOptionsKategori();
+
+            document.getElementById('labelNamaFile').innerText = "Belum ada foto terpilih";
+            document.getElementById('previewBase64Img').classList.add('hidden');
+            document.getElementById('placeholderPreview').classList.remove('hidden');
+            document.getElementById('stringBase64Container').value = "";
+
+            if (isEditMode && targetKey) {
+                const prod = localMasterProducts.find(p => p.firebaseKey === targetKey);
+                if(!prod) return;
+
+                document.getElementById('modalTitle').innerHTML = `<span>📝</span> Edit Informasi Produk`;
+                document.getElementById('btnSubmitModal').innerText = "Simpan Pembaruan ➔";
+                
+                document.getElementById('editItemFirebaseKey').value = targetKey;
+                document.getElementById('namaProduk').value = prod.nama;
+                document.getElementById('hargaProduk').value = prod.harga;
+                document.getElementById('stokProduk').value = prod.stok;
+                
+                if(prod.kategori && !listKategoriLokal.includes(prod.kategori.toLowerCase())) {
+                    listKategoriLokal.push(prod.kategori.toLowerCase());
+                    renderSelectOptionsKategori();
+                }
+                document.getElementById('kategoriProduk').value = prod.kategori || "umum";
+                
+                // DETEKSI LOGIKA PREVIEW CADANGAN UNTUK PRODUK LAMA & BARU
+                document.getElementById('labelNamaFile').innerText = "🔄 Memeriksa foto di Cloud...";
+                dbAdmin.ref('databaseGambar/' + targetKey).once('value').then((imgSnapshot) => {
+                    const imgData = imgSnapshot.val();
+                    
+                    // 1. Jika produk BARU (Sudah dipisah di node databaseGambar)
+                    if (imgData && imgData.gambar && imgData.gambar.startsWith('data:image')) {
+                        tampilkanPreviewGambarPopup(imgData.gambar);
+                    } 
+                    // 2. Jika produk LAMA (Gambarnya masih nempel di databaseMenu lama)
+                    else if (prod.gambar && prod.gambar.startsWith('data:image')) {
+                        tampilkanPreviewGambarPopup(prod.gambar);
+                    } else {
+                        document.getElementById('labelNamaFile').innerText = "Tidak ada foto tersimpan";
+                    }
+                }).catch(() => {
+                    if (prod.gambar && prod.gambar.startsWith('data:image')) {
+                        tampilkanPreviewGambarPopup(prod.gambar);
+                    } else {
+                        document.getElementById('labelNamaFile').innerText = "Gagal memuat foto";
+                    }
+                });
+
+            } else {
+                document.getElementById('modalTitle').innerHTML = `<span>➕</span> Tambah Menu Baru`;
+                document.getElementById('btnSubmitModal').innerText = "Simpan Baru ➔";
+                document.getElementById('editItemFirebaseKey').value = "";
+                document.getElementById('stokProduk').value = "";
+            }
+
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+            setTimeout(() => { content.classList.remove('scale-95', 'opacity-0'); content.classList.add('scale-100', 'opacity-100'); }, 20);
+        }
+
+        function tampilkanPreviewGambarPopup(base64String) {
+            document.getElementById('stringBase64Container').value = base64String;
+            document.getElementById('previewBase64Img').src = base64String;
+            document.getElementById('previewBase64Img').classList.remove('hidden');
+            document.getElementById('placeholderPreview').classList.add('hidden');
+            document.getElementById('labelNamaFile').innerText = "Foto berhasil dimuat";
+        }
+
+        window.tutupModalPopupProduk = function() {
+            const modal = document.getElementById('modalProduk');
+            const content = document.getElementById('modalContent');
+            content.classList.remove('scale-100', 'opacity-100'); content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { modal.classList.remove('flex'); modal.classList.add('hidden'); }, 180);
+        }
+
+        window.hapusMenuAdmin = function(targetKey) {
+            if (confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
+                dbAdmin.ref('databaseMenu/' + targetKey).remove().then(() => {
+                    dbAdmin.ref('databaseGambar/' + targetKey).remove();
+                    showToastNotification("Produk berhasil dihapus!");
+                });
+            }
+        }
+    </script>
+</body>
+</html>

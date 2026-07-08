@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Panel Admin - Detail Pesanan</title>
+    <script src="../tailwind.js"></script>
+    <style>
+        .scrollbar-none::-webkit-scrollbar { display: none; }
+        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+        th { position: sticky; top: 0; background-color: #1e293b; z-index: 10; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen h-screen flex flex-col md:flex-row select-none overflow-hidden">
+
+    <div id="toastAlert" class="fixed top-4 right-4 bg-emerald-600 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-2xl transition-all duration-300 transform translate-y-[-20px] opacity-0 pointer-events-none z-50 flex items-center gap-2">
+        <span>✅</span> <span id="toastMessage">Status pesanan berhasil diperbarui!</span>
+    </div>
+
+    <aside class="w-full md:w-64 bg-slate-800 border-b md:border-b-0 md:border-r border-slate-700 p-6 flex flex-col justify-between flex-shrink-0 h-auto md:h-screen z-20">
+        <div>
+            <div class="mb-8 text-center md:text-left">
+                <h2 class="text-2xl font-black tracking-wider text-blue-500">ADMIN PANEL</h2>
+                <p class="text-xs text-slate-400 mt-1">Sistem Manajemen Toko AA</p>
+            </div>
+
+            <nav class="space-y-2 flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 gap-2 md:gap-0 scrollbar-none">
+                <a href="admin.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Dashboard Admin
+                </a>
+                <a href="produk.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Kelola Produk
+                </a>
+                <a href="user.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Kelola User
+                </a>
+                <a href="order.html" class="block bg-blue-600 text-white font-bold px-4 py-3 rounded-xl shadow transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Detail Pesanan
+                </a>
+                <a href="chart.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Grafik Penjualan
+                </a>
+                <a href="rekap.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Rekap & Laris
+                </a>
+                <a href="iklan.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Kelola Iklan Popup 📢
+                </a>
+            </nav>
+        </div>
+
+        <button id="btn-logout-admin" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition mt-4 md:mt-0 shadow-lg shadow-red-900/20 flex-shrink-0">
+            Keluar Panel
+        </button>
+    </aside>
+
+    <main class="flex-1 p-6 md:p-8 h-screen flex flex-col overflow-hidden relative">
+        
+        <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 mb-5 shadow-sm flex-shrink-0">
+            <h1 class="text-xl font-extrabold text-white">Daftar Pesanan Masuk Realtime 🛒</h1>
+            <p class="text-xs text-slate-400 mt-0.5">Klik area teks pada baris tabel untuk memunculkan popup rincian detail nota lengkap.</p>
+        </div>
+
+        <div class="flex-1 bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-md flex flex-col overflow-hidden mb-2">
+            
+            <div id="tabStatusContainer" class="flex items-center gap-1.5 border-b border-slate-700 pb-3 mb-4 overflow-x-auto scrollbar-none flex-shrink-0">
+                <button onclick="setFilterStatusAdmin('Semua')" id="tab-Semua" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex-shrink-0 bg-blue-600 text-white">Semua</button>
+                <button onclick="setFilterStatusAdmin('Pending')" id="tab-Pending" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex-shrink-0 bg-slate-900 text-slate-400 hover:text-white">Pending</button>
+                <button onclick="setFilterStatusAdmin('Selesai')" id="tab-Selesai" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex-shrink-0 bg-slate-900 text-slate-400 hover:text-white">Selesai</button>
+            </div>
+
+            <div id="tabelScrollContainer" class="flex-1 overflow-y-auto pr-1 text-slate-300">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-700 text-[10px] font-black text-slate-500 uppercase tracking-wider">
+                            <th class="pb-3 pt-1 pl-3 w-24">Waktu</th>
+                            <th class="pb-3 pt-1 w-28">Nomor Order</th>
+                            <th class="pb-3 pt-1">Nama Pemesan</th>
+                            <th class="pb-3 pt-1 text-right pr-4">Total Bayar</th>
+                            <th class="pb-3 pt-1 text-center w-28">Status</th>
+                            <th class="pb-3 pt-1 text-center w-36">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelOrderBody" class="divide-y divide-slate-700/40 text-xs">
+                        </tbody>
+                </table>
+
+                <div id="adminScrollLoader" class="text-center py-3 text-[11px] text-slate-500 font-medium hidden">
+                    🔄 Memuat data pesanan selanjutnya...
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="modalRincianOrder" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden justify-center items-center p-4">
+        <div class="bg-slate-800 border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl transform scale-95 opacity-0 transition-all duration-200 overflow-y-auto max-h-[90vh] scrollbar-none relative" id="modalRincianContent">
+            
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3 mb-5">
+                <h3 class="text-sm font-black text-white flex items-center gap-2">
+                    <span>📄</span> Rincian Nota Pesanan
+                </h3>
+                <button onclick="tutupModalRincianOrder()" class="text-slate-400 hover:text-white text-lg font-bold focus:outline-none">✕</button>
+            </div>
+            
+            <div class="space-y-4 text-xs text-slate-300 pl-1 mb-4">
+                <input type="hidden" id="currentOrderKey" value="">
+
+                <div class="grid grid-cols-12 gap-1 items-baseline">
+                    <div class="col-span-4 text-slate-400 font-semibold">Waktu Order</div>
+                    <div class="col-span-1 text-center text-slate-500">:</div>
+                    <div id="viewWaktuOrder" class="col-span-7 font-mono text-slate-300"></div>
+                </div>
+
+                <div class="grid grid-cols-12 gap-1 items-baseline">
+                    <div class="col-span-4 text-slate-400 font-semibold">Nomor Order</div>
+                    <div class="col-span-1 text-center text-slate-500">:</div>
+                    <div id="viewOrderId" class="col-span-7 font-bold text-white font-mono"></div>
+                </div>
+
+                <div class="grid grid-cols-12 gap-1 items-baseline">
+                    <div class="col-span-4 text-slate-400 font-semibold">Nama Pemesan</div>
+                    <div class="col-span-1 text-center text-slate-500">:</div>
+                    <div id="viewNamaPembeli" class="col-span-7 font-bold text-slate-200"></div>
+                </div>
+
+                <div class="grid grid-cols-12 gap-1 items-baseline">
+                    <div class="col-span-4 text-slate-400 font-semibold">Ambil / Kirim</div>
+                    <div class="col-span-1 text-center text-slate-500">:</div>
+                    <div id="viewMetode" class="col-span-7 font-bold text-orange-400 uppercase tracking-wide"></div>
+                </div>
+
+                <div class="grid grid-cols-12 gap-1 items-baseline">
+                    <div class="col-span-4 text-slate-400 font-semibold">Kepedasan</div>
+                    <div class="col-span-1 text-center text-slate-500">:</div>
+                    <div id="viewPedas" class="col-span-7 font-bold text-red-400"></div>
+                </div>
+
+                <div class="grid grid-cols-12 gap-1 items-baseline">
+                    <div class="col-span-4 text-slate-400 font-semibold">Keterangan</div>
+                    <div class="col-span-1 text-center text-slate-500">:</div>
+                    <div id="viewKeterangan" class="col-span-7 font-medium text-slate-200 italic"></div>
+                </div>
+
+                <div id="boxRowAlamatKirim" class="grid grid-cols-12 gap-1 items-baseline">
+                    <div class="col-span-4 text-slate-400 font-semibold">Alamat Kirim</div>
+                    <div class="col-span-1 text-center text-slate-500">:</div>
+                    <div id="viewAlamat" class="col-span-7 text-slate-300 leading-relaxed font-medium"></div>
+                </div>
+
+                <div class="border-t border-b border-slate-700/60 py-3 my-2">
+                    <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Menu Yang Dibeli:</span>
+                    
+                    <div class="grid grid-cols-12 gap-1 text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5 font-mono px-1">
+                        <div class="col-span-6">Nama Menu</div>
+                        <div class="col-span-2 text-center">Qty</div>
+                        <div class="col-span-4 text-right">Harga</div>
+                    </div>
+
+                    <div id="viewDaftarItem" class="space-y-1.5 font-mono text-[11px] text-slate-300">
+                        </div>
+                    
+                    <div class="flex justify-between items-baseline mt-3 pt-2 border-t border-dashed border-slate-700">
+                        <span class="text-xs font-bold text-slate-400">TOTAL BAYAR</span>
+                        <span id="viewTotalHarga" class="text-sm font-black text-blue-400 font-mono"></span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-12 gap-1 items-baseline">
+                    <div class="col-span-4 text-slate-400 font-semibold">Status Nota</div>
+                    <div class="col-span-1 text-center text-slate-500">:</div>
+                    <div id="viewStatus" class="col-span-7 font-black uppercase tracking-wider text-[10px]"></div>
+                </div>
+            </div>
+
+            <button id="btnFloatingPrint" onclick="prosesCetakStrukThermal()" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-3 rounded-xl transition-all duration-200 transform active:scale-95 shadow-md shadow-blue-600/20 items-center justify-center gap-1.5 hidden">
+                🖨️ Bagikan Struk Belanja (.txt / .prn)
+            </button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAz9WumMNc97Ul-QnONh5rI0hKXh5ZelRY",
+            authDomain: "toko-aa-ef6aa.firebaseapp.com",
+            databaseURL: "https://toko-aa-ef6aa-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "toko-aa-ef6aa",
+            storageBucket: "toko-aa-ef6aa.firebasestorage.app",
+            messagingSenderId: "923877778887",
+            appId: "1:923877778887:web:5eaf71243d582049c825e2"
+        };
+
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        const dbAdmin = firebase.database();
+
+        let localMasterOrders = []; 
+        let localFilteredOrders = []; 
+        let statusFilterAktif = "Semua";
+
+        let halamanKe = 1;
+        const limitBarisPerPemuatan = 12; 
+        let penandaDataHabis = false;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('isLoggedIn') !== 'true' || localStorage.getItem('userRole') !== 'admin') {
+                window.location.href = '../index.html'; return;
+            }
+
+            document.getElementById('btn-logout-admin')?.addEventListener('click', () => {
+                if (confirm('Apakah Anda yakin ingin keluar dari Panel Admin?')) {
+                    localStorage.clear(); window.location.href = '../index.html';
+                }
+            });
+
+            dbAdmin.ref('daftarPesanan').on('value', (snapshot) => {
+                const dataCloud = snapshot.val() || {};
+                
+                localMasterOrders = Object.keys(dataCloud).map(key => {
+                    return {
+                        firebaseKey: key,
+                        idPesanan: dataCloud[key].idPesanan || key,
+                        namaPelanggan: dataCloud[key].namaPelanggan || 'Pelanggan',
+                        waktuPesanan: dataCloud[key].waktuPesanan || '-',
+                        metodePengambilan: dataCloud[key].metodePengambilan || 'delivery',
+                        alamatPengiriman: dataCloud[key].alamatPengiriman || '-',
+                        tingkatKepedasan: dataCloud[key].tingkatKepedasan || '0',
+                        keterangan: dataCloud[key].keterangan || '-',
+                        totalBayar: parseInt(dataCloud[key].totalBayar || 0),
+                        status: dataCloud[key].status || 'Pending',
+                        items: dataCloud[key].items || []
+                    };
+                });
+                
+                eksekusiPenyaringanDataTabel();
+            });
+
+            const kontainerScrollTabel = document.getElementById('tabelScrollContainer');
+            kontainerScrollTabel?.addEventListener('scroll', () => {
+                if (penandaDataHabis) return;
+                const sTop = kontainerScrollTabel.scrollTop;
+                const sHeight = kontainerScrollTabel.scrollHeight;
+                const cHeight = kontainerScrollTabel.clientHeight;
+
+                if (sHeight - sTop - cHeight < 50) {
+                    penandaDataHabis = true;
+                    const loader = document.getElementById('adminScrollLoader');
+                    if (loader && halamanKe * limitBarisPerPemuatan <= localFilteredOrders.length) {
+                        loader.classList.remove('hidden');
+                    }
+
+                    setTimeout(() => {
+                        if (loader) loader.classList.add('hidden');
+                        penandaDataHabis = false;
+                        renderPotonganBarisTabel();
+                    }, 200);
+                }
+            });
+        });
+
+        function showToastNotification(pesan) {
+            const toast = document.getElementById('toastAlert');
+            const msgSpan = document.getElementById('toastMessage');
+            if (!toast || !msgSpan) return;
+
+            msgSpan.innerText = pesan;
+            toast.classList.remove('translate-y-[-20px]', 'opacity-0', 'pointer-events-none');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-[-20px]', 'opacity-0', 'pointer-events-none');
+            }, 2000);
+        }
+
+        function setFilterStatusAdmin(status) {
+            statusFilterAktif = status;
+            const semuaTab = ['Semua', 'Pending', 'Selesai'];
+            semuaTab.forEach(t => {
+                const el = document.getElementById(`tab-${t}`);
+                if (el) {
+                    el.className = t === status 
+                        ? "px-3 py-1.5 rounded-lg text-xs font-bold transition flex-shrink-0 bg-blue-600 text-white"
+                        : "px-3 py-1.5 rounded-lg text-xs font-bold transition flex-shrink-0 bg-slate-900 text-slate-400 hover:text-white";
+                }
+            });
+            eksekusiPenyaringanDataTabel();
+        }
+
+        function eksekusiPenyaringanDataTabel() {
+            localFilteredOrders = localMasterOrders.filter(order => {
+                if (!order) return false;
+                if (statusFilterAktif === "Semua") return true;
+                return order.status === statusFilterAktif;
+            });
+
+            localFilteredOrders.sort((a, b) => {
+                return b.waktuPesanan.localeCompare(a.waktuPesanan);
+            });
+
+            const tbody = document.getElementById('tabelOrderBody');
+            if (tbody) tbody.innerHTML = '';
+            halamanKe = 1;
+            penandaDataHabis = false;
+            renderPotonganBarisTabel();
+        }
+
+        function renderPotonganBarisTabel() {
+            const tbody = document.getElementById('tabelOrderBody');
+            if (!tbody) return;
+
+            if (localFilteredOrders.length === 0) {
+                penandaDataHabis = true;
+                tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-500 italic">Tidak ada data pesanan masuk.</td></tr>`;
+                return;
+            }
+
+            const mulai = (halamanKe - 1) * limitBarisPerPemuatan;
+            const selesai = mulai + limitBarisPerPemuatan;
+
+            if (mulai >= localFilteredOrders.length) {
+                penandaDataHabis = true; return;
+            }
+
+            const potonganData = localFilteredOrders.slice(mulai, selesai);
+
+            potonganData.forEach((order) => {
+                const badgeColor = order.status === 'Pending' ? 'bg-amber-950/50 text-amber-400 border-amber-800/40' : 'bg-emerald-950/50 text-emerald-400 border-emerald-800/40';
+
+                const barisHTML = `
+                    <tr class="hover:bg-slate-700/30 transition border-b border-slate-700/40">
+                        <td onclick="bukaModalRincianOrder('${order.firebaseKey}')" class="py-3 text-slate-400 font-mono text-[11px] pl-3 cursor-pointer">${order.waktuPesanan.split(' ')[1] || order.waktuPesanan}</td>
+                        <td onclick="bukaModalRincianOrder('${order.firebaseKey}')" class="py-3 font-bold text-slate-200 font-mono text-[11px] cursor-pointer">${order.idPesanan}</td>
+                        <td onclick="bukaModalRincianOrder('${order.firebaseKey}')" class="py-3 font-bold text-white leading-tight truncate max-w-[150px] cursor-pointer">${order.namaPelanggan}</td>
+                        <td onclick="bukaModalRincianOrder('${order.firebaseKey}')" class="py-3 text-right font-black text-blue-400 pr-4 font-mono cursor-pointer">Rp ${order.totalBayar.toLocaleString('id-ID')}</td>
+                        
+                        <td class="py-3 text-center">
+                            <span class="px-2 py-0.5 rounded-md text-[9px] font-black uppercase border ${badgeColor}">
+                                ${order.status}
+                            </span>
+                        </td>
+                        <td class="py-3 text-center flex items-center justify-center gap-1.5 mt-1">
+                            ${order.status === 'Pending' ? `
+                                <button onclick="prosesSelesaiPesanan('${order.firebaseKey}')" class="bg-emerald-950/40 text-emerald-400 hover:bg-emerald-600 hover:text-white px-2.5 py-1 rounded-lg text-[10px] font-black transition active:scale-90 border border-emerald-100/10">
+                                    Selesai
+                                </button>
+                            ` : `
+                                <button onclick="bukaModalRincianOrder('${order.firebaseKey}')" class="bg-blue-950/40 text-blue-400 hover:bg-blue-600 hover:text-white px-2.5 py-1 rounded-lg text-[10px] font-black transition active:scale-90 border border-blue-100/10">
+                                    Struk
+                                </button>
+                            `}
+                            <button onclick="hapusRiwayatPesanan('${order.firebaseKey}')" class="bg-red-950/30 text-red-400 hover:bg-red-600 hover:text-white px-2.5 py-1 rounded-lg text-[10px] font-black transition active:scale-90 border border-red-100/10">
+                                Hapus
+                            </button>
+                        </td>
+                    </tr>`;
+                tbody.insertAdjacentHTML('beforeend', barisHTML);
+            });
+            halamanKe++;
+        }
+
+        // POPUP MODAL NOTA DETIL ADMIN
+        window.bukaModalRincianOrder = function(firebaseKey) {
+            const order = localMasterOrders.find(o => o.firebaseKey === firebaseKey);
+            if (!order) return;
+
+            document.getElementById('currentOrderKey').value = order.firebaseKey;
+            document.getElementById('viewOrderId').innerText = order.idPesanan;
+            document.getElementById('viewNamaPembeli').innerText = order.namaPelanggan;
+            document.getElementById('viewWaktuOrder').innerText = order.waktuPesanan;
+            document.getElementById('viewMetode').innerText = order.metodePengambilan;
+            document.getElementById('viewPedas').innerText = order.tingkatKepedasan;
+            
+            document.getElementById('viewKeterangan').innerText = order.keterangan || '-';
+            
+            document.getElementById('viewAlamat').innerText = order.alamatPengiriman;
+            document.getElementById('viewTotalHarga').innerText = `Rp ${order.totalBayar.toLocaleString('id-ID')}`;
+            document.getElementById('viewStatus').innerText = order.status;
+
+            const elStatus = document.getElementById('viewStatus');
+            elStatus.className = order.status === 'Pending' ? "font-black uppercase tracking-wider text-[10px] text-amber-400" : "font-black uppercase tracking-wider text-[10px] text-emerald-400";
+
+            const boxAlamat = document.getElementById('boxRowAlamatKirim');
+            const caraAmbil = order.metodePengambilan.toLowerCase();
+            if (caraAmbil === "ambil" || caraAmbil === "ambil sendiri") {
+                boxAlamat.style.display = 'none';
+            } else {
+                boxAlamat.style.display = 'grid';
+            }
+
+            const btnPrint = document.getElementById('btnFloatingPrint');
+            if (order.status === 'Selesai') {
+                btnPrint.style.display = 'flex';
+            } else {
+                btnPrint.style.display = 'none';
+            }
+
+            const containerItem = document.getElementById('viewDaftarItem');
+            containerItem.innerHTML = '';
+            if (Array.isArray(order.items)) {
+                order.items.forEach(it => {
+                    if (!it) return;
+                    containerItem.innerHTML += `
+                        <div class="grid grid-cols-12 gap-1 text-slate-300 font-mono items-center">
+                            <div class="col-span-6 truncate">${it.nama}</div>
+                            <div class="col-span-2 text-center text-slate-400 font-bold">x${it.jumlah}</div>
+                            <div class="col-span-4 text-right text-slate-400">Rp ${(it.harga * it.jumlah).toLocaleString('id-ID')}</div>
+                        </div>`;
+                });
+            }
+
+            const modal = document.getElementById('modalRincianOrder');
+            const content = document.getElementById('modalRincianContent');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+            setTimeout(() => { content.classList.remove('scale-95', 'opacity-0'); content.classList.add('scale-100', 'opacity-100'); }, 20);
+        }
+
+        window.tutupModalRincianOrder = function() {
+            const modal = document.getElementById('modalRincianOrder');
+            const content = document.getElementById('modalRincianContent');
+            content.classList.remove('scale-100', 'opacity-100'); content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { modal.classList.remove('flex'); modal.classList.add('hidden'); }, 180);
+        }
+
+        window.prosesSelesaiPesanan = function(key) {
+            if (confirm("Tandai pesanan ini telah selesai diproses/dikirim?")) {
+                dbAdmin.ref('daftarPesanan/' + key).update({ status: 'Selesai' })
+                    .then(() => {
+                        showToastNotification("Pesanan ditandai selesai!");
+                        bukaModalRincianOrder(key);
+                    });
+            }
+        }
+
+        window.hapusRiwayatPesanan = function(key) {
+            if (confirm("Hapus permanen riwayat data pesanan ini dari panel?")) {
+                dbAdmin.ref('daftarPesanan/' + key).remove()
+                    .then(() => {
+                        tutupModalRincianOrder();
+                        showToastNotification("Nota pesanan berhasil dihapus!");
+                    });
+            }
+        }
+
+        // SINKRONISASI INTENT SCHEME (TEXT/PRN) PADA STRUK ASLI TOTAL TANPA MENYUNTING FITUR LAIN
+        window.prosesCetakStrukThermal = function() {
+            const key = document.getElementById('currentOrderKey').value;
+            const order = localMasterOrders.find(o => o.firebaseKey === key);
+            if (!order) return;
+
+            const lebarBaris = 32;
+            const buatGaris = (char = '=') => char.repeat(lebarBaris) + '\n';
+            
+            const pusatkanTeks = (teks) => {
+                if (teks.length >= lebarBaris) return teks.substring(0, lebarBaris) + '\n';
+                const sisaSpasi = lebarBaris - teks.length;
+                return ' '.repeat(Math.floor(sisaSpasi / 2)) + teks + '\n';
+            };
+
+            const buatBarisKolomKiriKanan = (kiri, kanan) => {
+                const ruangTersedia = lebarBaris - kiri.length;
+                if (ruangTersedia <= kanan.length) {
+                    return kiri + '\n' + ' '.repeat(lebarBaris - kanan.length) + kanan + '\n';
+                }
+                return kiri + ' '.repeat(ruangTersedia - kanan.length) + kanan + '\n';
+            };
+
+            let txt = '';
+            txt += buatGaris('=');
+            txt += pusatkanTeks('TOKO AA');
+            txt += buatGaris('=');
+            txt += `ID Order : ${order.idPesanan}\n`;
+            txt += `Pelanggn : ${order.namaPelanggan}\n`;
+            txt += `Waktu    : ${order.waktuPesanan}\n`;
+            txt += `Metode   : ${order.metodePengambilan}\n`;
+            txt += `Pedas    : ${order.tingkatKepedasan}\n`;
+            txt += `Ket      : ${order.keterangan}\n`;
+            txt += buatGaris('-');
+
+            if (Array.isArray(order.items)) {
+                order.items.forEach(it => {
+                    if (!it) return;
+                    txt += `${it.nama}\n`;
+                    let infoHarga = `  ${it.jumlah} x Rp ${it.harga.toLocaleString('id-ID')}`;
+                    let subTotal = `Rp ${(it.harga * it.jumlah).toLocaleString('id-ID')}`;
+                    txt += buatBarisKolomKiriKanan(infoHarga, subTotal);
+                });
+            }
+
+            txt += buatGaris('-');
+            txt += buatBarisKolomKiriKanan('TOTAL BAYAR', `Rp ${order.totalBayar.toLocaleString('id-ID')}`);
+            txt += buatGaris('=');
+            txt += pusatkanTeks('Terima Kasih Atas Kunjungan Anda');
+            txt += pusatkanTeks('Selamat Menikmati!');
+            txt += '\n';
+
+            // SUNTIKKAN LOGIKA OPER INTENT KHUSUS ANDROID WEBVIEW ANDA DI SINI (MUTLAK TEXT/PRN)
+            window.location.href = "intent:#Intent;action=android.intent.action.SEND;type=text/prn;S.android.intent.extra.TEXT=" + encodeURIComponent(txt) + ";end";
+        }
+    </script>
+</body>
+</html>

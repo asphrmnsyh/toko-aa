@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Panel Admin - Toko AA</title>
+    <script src="../tailwind.js"></script>
+    <style>
+        .scrollbar-none::-webkit-scrollbar { display: none; }
+        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen h-screen flex flex-col md:flex-row select-none overflow-hidden">
+
+    <aside class="w-full md:w-64 bg-slate-800 border-b md:border-b-0 md:border-r border-slate-700 p-6 flex flex-col justify-between flex-shrink-0 h-auto md:h-screen z-20">
+        <div>
+            <div class="mb-8 text-center md:text-left">
+                <h2 class="text-2xl font-black tracking-wider text-blue-500">ADMIN PANEL</h2>
+                <p class="text-xs text-slate-400 mt-1">Sistem Manajemen Toko AA</p>
+            </div>
+
+            <nav class="space-y-2 flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 gap-2 md:gap-0 scrollbar-none">
+                <a href="admin.html" class="block bg-blue-600 text-white font-bold px-4 py-3 rounded-xl shadow transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Dashboard Admin
+                </a>
+                <a href="produk.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Kelola Produk
+                </a>
+                <a href="user.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Kelola User
+                </a>
+                <a href="order.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Detail Pesanan
+                </a>
+                <a href="chart.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Grafik Penjualan
+                </a>
+                <a href="rekap.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Rekap & Laris
+                </a>
+                <a href="iklan.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Kelola Iklan Popup 📢
+                </a>
+            </nav>
+        </div>
+
+        <button id="btn-logout-admin" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition mt-4 md:mt-0 shadow-lg shadow-red-900/20 flex-shrink-0">
+            Keluar Panel
+        </button>
+    </aside>
+
+    <main class="flex-1 p-6 md:p-8 h-screen flex flex-col overflow-y-auto scrollbar-none">
+        
+        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 mb-6 shadow-sm flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+            <div>
+                <h1 class="text-xl font-extrabold text-white">Selamat Datang, Admin Utama 👋</h1>
+                <p class="text-xs text-slate-400 mt-0.5">Pantau ringkasan performa toko Anda hari ini secara praktis dan bebas hambatan.</p>
+            </div>
+            <div class="bg-slate-900/60 px-4 py-2 rounded-xl border border-slate-700 text-right min-w-[140px]">
+                <span class="text-[10px] uppercase tracking-wider font-black text-slate-500 block">Status Sistem</span>
+                <span class="text-xs font-black text-emerald-400 flex items-center justify-end gap-1.5 mt-0.5">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    Firebase Connected
+                </span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 flex-shrink-0">
+            
+            <div onclick="setAktifTabelDashboard('omzet')" class="bg-slate-800 p-4 rounded-2xl border border-slate-700 shadow-sm space-y-1 cursor-pointer hover:bg-slate-700/50 hover:scale-[1.02] active:scale-95 transition duration-200 flex flex-col justify-between">
+                <div>
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">💰 Omzet Hari Ini</span>
+                    <h3 id="stat-omzet-hari-ini" class="text-base sm:text-lg font-black text-blue-400 font-mono">Rp 0</h3>
+                </div>
+                <div class="flex justify-between items-center pt-1" onclick="event.stopPropagation();">
+                    <span id="stat-omzet-alltime" class="text-[9px] text-slate-400 font-medium">All-Time: Rp 0</span>
+                    <button onclick="bukaModalChartDashboard()" class="bg-blue-900/60 hover:bg-blue-600 border border-blue-700 text-white text-[10px] font-black px-1.5 py-0.5 rounded-md transition active:scale-90" title="Buka Grafik Penjualan">
+                        📊 Chart
+                    </button>
+                </div>
+            </div>
+
+            <div onclick="setAktifTabelDashboard('pending')" class="bg-slate-800 p-4 rounded-2xl border border-slate-700 shadow-sm space-y-1 cursor-pointer hover:bg-slate-700/50 hover:scale-[1.02] active:scale-95 transition duration-200">
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">⏳ Order Pending</span>
+                <h3 id="stat-pending" class="text-base sm:text-lg font-black text-amber-400 font-mono">0 Antrean</h3>
+                <span class="text-[9px] text-slate-500 block">Klik lihat antrean dapur</span>
+            </div>
+
+            <div onclick="setAktifTabelDashboard('kritis')" class="bg-slate-800 p-4 rounded-2xl border border-slate-700 shadow-sm space-y-1 cursor-pointer hover:bg-slate-700/50 hover:scale-[1.02] active:scale-95 transition duration-200">
+                <span class="text-[10px] font-black text-slate-400 tracking-wider block">⚠️ STOK KRITIS (≤ 2)</span>
+                <div id="wadahStatusKritis">
+                    <h3 id="stat-menu-kritis" class="text-base sm:text-lg font-black text-slate-300 font-mono">0 Item</h3>
+                </div>
+                <span id="stat-menu-total" class="text-[9px] text-slate-400 block">Dari total 0 menu terdaftar</span>
+            </div>
+
+            <div onclick="setAktifTabelDashboard('user')" class="bg-slate-800 p-4 rounded-2xl border border-slate-700 shadow-sm space-y-1 cursor-pointer hover:bg-slate-700/50 hover:scale-[1.02] active:scale-95 transition duration-200">
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">👥 User Terdaftar</span>
+                <h3 id="stat-user" class="text-base sm:text-lg font-black text-emerald-400 font-mono">0 User</h3>
+                <span class="text-[9px] text-slate-500 block">Klik lacak status online</span>
+            </div>
+
+        </div>
+
+        <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-md flex flex-col mb-4 flex-1 overflow-hidden">
+            <div class="border-b border-slate-700 pb-3 mb-4 flex justify-between items-center gap-2 flex-shrink-0">
+                <div>
+                    <h3 id="judulPanelDinamis" class="text-sm font-black text-white flex items-center gap-1.5">
+                        <span>🟢</span> Monitoring Akun Aktif Pelanggan (3 Hari Terakhir)
+                    </h3>
+                    <p id="subJudulPanelDinamis" class="text-[11px] text-slate-400 mt-0.5">Memantau status online dan kunjungan terakhir user yang aktif 3 hari belakangan.</p>
+                </div>
+                <button id="btnResetDashboard" onclick="setAktifTabelDashboard('user')" class="hidden bg-slate-900 hover:bg-slate-700 border border-slate-700 text-slate-300 font-bold px-3 py-1.5 rounded-xl text-xs transition active:scale-90 flex-shrink-0">
+                    ✕ Reset Tampilan
+                </button>
+            </div>
+
+            <div class="overflow-y-auto flex-1 pr-1 text-slate-300 scrollbar-none">
+                <table class="w-full text-left border-collapse">
+                    <thead id="headTabelDinamis">
+                        </thead>
+                    <tbody id="bodyTabelDinamis" class="divide-y divide-slate-700/40 text-xs text-slate-300">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="modalChartDashboard" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden justify-center items-center p-4">
+        <div class="bg-slate-800 border border-slate-700 w-full max-w-4xl h-auto max-h-[90vh] rounded-2xl p-6 shadow-2xl transform scale-95 opacity-0 transition-all duration-200 flex flex-col" id="modalChartContent">
+            
+            <div class="flex justify-between items-center border-b border-slate-700 pb-4 mb-4 gap-4 flex-shrink-0">
+                <div>
+                    <h3 class="text-sm font-black text-white flex items-center gap-1.5">
+                        <span>📈</span> Grafik Garis Tren Pemasukan Omzet
+                    </h3>
+                    <p id="subJudulChart" class="text-[11px] text-slate-400 mt-0.5">Memvisualisasikan fluktuasi grafik tren penjualan lunas dari Firebase.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <select id="filterModeChart" onchange="gantiModeChartDashboard(this.value)" class="bg-slate-900 border border-slate-700 text-slate-200 text-xs font-bold rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-blue-500">
+                        <option value="bulan">📊 Bulan Ini</option>
+                        <option value="tahun">📅 Tahunan</option>
+                    </select>
+                    <button onclick="tutupModalChartDashboard()" class="text-slate-400 hover:text-white text-lg font-bold focus:outline-none px-1">✕</button>
+                </div>
+            </div>
+
+            <div class="h-72 w-full bg-slate-900/60 rounded-xl border border-slate-700/50 relative p-4 flex-1 flex flex-col justify-between overflow-hidden" id="boxWadahChartLine">
+                <div id="kontainerSgLineChart" class="w-full h-full"></div>
+            </div>
+            
+            <div class="flex justify-between items-center text-[9px] font-black text-slate-400 uppercase tracking-wider px-4 pt-3 select-none flex-shrink-0" id="labelSumbuXChart">
+                </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAz9WumMNc97Ul-QnONh5rI0hKXh5ZelRY",
+            authDomain: "toko-aa-ef6aa.firebaseapp.com",
+            databaseURL: "https://toko-aa-ef6aa-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "toko-aa-ef6aa",
+            storageBucket: "toko-aa-ef6aa.firebasestorage.app",
+            messagingSenderId: "923877778887",
+            appId: "1:923877778887:web:5eaf71243d582049c825e2"
+        };
+
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        const dbAdminDashboard = firebase.database();
+
+        let masterDataMenu = [];
+        let masterDataUsers = [];
+        let masterDataOrders = [];
+        
+        let tipeTabelAktif = "user"; 
+        let modeChartAktif = "bulan";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. CEK OTORISASI ADMIN
+            if (localStorage.getItem('isLoggedIn') !== 'true' || localStorage.getItem('userRole') !== 'admin') {
+                window.location.href = '../index.html'; return;
+            }
+
+            // 2. LOGOUT PANEL ADMIN
+            document.getElementById('btn-logout-admin')?.addEventListener('click', () => {
+                if (confirm('Apakah Anda yakin ingin keluar dari Panel Admin?')) {
+                    localStorage.clear(); window.location.href = '../index.html';
+                }
+            });
+
+            // 3. DATA MENU (X ITEM BERKEDIP)
+            dbAdminDashboard.ref('databaseMenu').on('value', (snapshot) => {
+                const raw = snapshot.val() || [];
+                masterDataMenu = Array.isArray(raw) ? raw.filter(i => i !== null) : Object.values(raw);
+                
+                const itemKritis = masterDataMenu.filter(m => m && parseInt(m.stok || 0) <= 2);
+                const wadah = document.getElementById('wadahStatusKritis');
+                
+                if (wadah) {
+                    if (itemKritis.length > 0) {
+                        wadah.innerHTML = `<h3 id="stat-menu-kritis" class="text-base sm:text-lg font-black text-red-500 font-mono animate-pulse">⚠️ ${itemKritis.length} Item</h3>`;
+                    } else {
+                        wadah.innerHTML = `<h3 id="stat-menu-kritis" class="text-base sm:text-lg font-black text-purple-400 font-mono">0 Item</h3>`;
+                    }
+                }
+                document.getElementById('stat-menu-total').innerText = `Dari total ${masterDataMenu.length} menu terdaftar`;
+                if(tipeTabelAktif === "kritis") renderTabelBawahDinamis();
+            });
+
+            // 4. DATA USERS SINKRON NODE 'users'
+            dbAdminDashboard.ref('users').on('value', (snapshot) => {
+                const rawUsers = snapshot.val() || {};
+                masterDataUsers = Object.keys(rawUsers).map(key => ({
+                    username: key,
+                    ...rawUsers[key]
+                })).filter(u => u.role !== 'admin');
+
+                document.getElementById('stat-user').innerText = `${masterDataUsers.length} User`;
+                if(tipeTabelAktif === "user") renderTabelBawahDinamis();
+            });
+
+            // Jalankan interval refresh tabel monitor setiap 10 detik agar pembaruan status online super realtime
+            setInterval(() => {
+                if (tipeTabelAktif === "user" && masterDataUsers.length > 0) {
+                    renderTabelBawahDinamis();
+                }
+            }, 10000);
+
+            // 5. DATA ORDERAN OMZET
+            dbAdminDashboard.ref('daftarPesanan').on('value', (snapshot) => {
+                const rawOrders = snapshot.val() || {};
+                masterDataOrders = Object.keys(rawOrders).map(key => ({
+                    firebaseKey: key,
+                    ...rawOrders[key]
+                }));
+
+                const sekarang = new Date();
+                const tglHariIni = `${sekarang.getFullYear()}-${String(sekarang.getMonth() + 1).padStart(2, '0')}-${String(sekarang.getDate()).padStart(2, '0')}`;
+
+                let omzetHariIni = 0;
+                let omzetSepanjangMasa = 0;
+                let totalPending = 0;
+
+                masterDataOrders.forEach(o => {
+                    if(!o) return;
+                    if(o.status === 'Selesai') {
+                        const nominal = parseInt(o.totalBayar || 0);
+                        omzetSepanjangMasa += nominal;
+                        if (o.waktuPesanan && o.waktuPesanan.startsWith(tglHariIni)) {
+                            omzetHariIni += nominal;
+                        }
+                    } else if(o.status === 'Pending') {
+                        totalPending++;
+                    }
+                });
+
+                document.getElementById('stat-omzet-hari-ini').innerText = `Rp ${omzetHariIni.toLocaleString('id-ID')}`;
+                document.getElementById('stat-omzet-alltime').innerText = `All-Time: Rp ${omzetSepanjangMasa.toLocaleString('id-ID')}`;
+                document.getElementById('stat-pending').innerText = `${totalPending} Antrean`;
+
+                renderChartLineMurniSVG();
+                if(tipeTabelAktif === "pending" || tipeTabelAktif === "omzet") renderTabelBawahDinamis();
+            });
+        });
+
+        // 6. POPUP KENDALI MODAL CHART
+        window.bukaModalChartDashboard = function() {
+            const modal = document.getElementById('modalChartDashboard');
+            const content = document.getElementById('modalChartContent');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+            renderChartLineMurniSVG();
+            setTimeout(() => { content.classList.remove('scale-95', 'opacity-0'); content.classList.add('scale-100', 'opacity-100'); }, 20);
+        }
+
+        window.tutupModalChartDashboard = function() {
+            const modal = document.getElementById('modalChartDashboard');
+            const content = document.getElementById('modalChartContent');
+            content.classList.remove('scale-100', 'opacity-100'); content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { modal.classList.remove('flex'); modal.classList.add('hidden'); }, 180);
+        }
+
+        window.gantiModeChartDashboard = function(mode) {
+            modeChartAktif = mode;
+            renderChartLineMurniSVG();
+        }
+
+        // 7. LINE CHART ENGINE SVG MURNI
+        function renderChartLineMurniSVG() {
+            const wadahSvg = document.getElementById('kontainerSgLineChart');
+            const wadahSumbuX = document.getElementById('labelSumbuXChart');
+            if(!wadahSvg || !wadahSumbuX) return;
+
+            wadahSvg.innerHTML = ''; wadahSumbuX.innerHTML = '';
+
+            const hariIni = new Date();
+            const tahunSekarang = hariIni.getFullYear();
+            const lebarKotak = wadahSvg.clientWidth || 650;
+            const tinggiKotak = wadahSvg.clientHeight || 250;
+
+            let listDataPoin = [];
+
+            if (modeChartAktif === "bulan") {
+                const bulanSekarang = hariIni.getMonth();
+                const totalHariDiBulanIni = new Date(tahunSekarang, bulanSekarang + 1, 0).getDate();
+                const stringBulanPembanding = `${tahunSekarang}-${String(bulanSekarang + 1).padStart(2, '0')}`;
+
+                document.getElementById('subJudulChart').innerText = `Menampilkan tren fluktuasi garis omzet harian tanggal 1 s/d ${totalHariDiBulanIni} pada bulan ini.`;
+
+                let listNominalPerHari = {};
+                for (let i = 1; i <= totalHariDiBulanIni; i++) { listNominalPerHari[i] = 0; }
+
+                masterDataOrders.forEach(o => {
+                    if (o && o.status === 'Selesai' && o.waktuPesanan && o.waktuPesanan.startsWith(stringBulanPembanding)) {
+                        const tglNota = parseInt(o.waktuPesanan.split('-')[2].split(' ')[0]);
+                        if (listNominalPerHari[tglNota] !== undefined) { listNominalPerHari[tglNota] += parseInt(o.totalBayar || 0); }
+                    }
+                });
+
+                const maxNominal = Math.max(...Object.values(listNominalPerHari), 1);
+                const rentangJarakX = lebarKotak / (totalHariDiBulanIni - 1 || 1);
+
+                for (let hari = 1; hari <= totalHariDiBulanIni; hari++) {
+                    const dana = listNominalPerHari[hari];
+                    const x = (hari - 1) * rentangJarakX;
+                    const y = tinggiKotak - ((dana / maxNominal) * (tinggiKotak - 40)) - 20;
+                    listDataPoin.push({ x: x, y: y, info: `Tgl ${hari}: Rp ${dana.toLocaleString('id-ID')}` });
+                }
+                wadahSumbuX.innerHTML = `<span>Tgl 1</span><span>Tgl 10</span><span>Tgl 20</span><span>Tgl ${totalHariDiBulanIni}</span>`;
+            } else {
+                document.getElementById('subJudulChart').innerText = `Menampilkan rekapitulasi grafik tren omzet bulanan selama tahun ${tahunSekarang}.`;
+                const namaBulanArr = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                let listNominalPerBulan = Array(12).fill(0);
+
+                masterDataOrders.forEach(o => {
+                    if (o && o.status === 'Selesai' && o.waktuPesanan && o.waktuPesanan.startsWith(String(tahunSekarang))) {
+                        const blnNota = parseInt(o.waktuPesanan.split('-')[1]) - 1;
+                        if (blnNota >= 0 && blnNota <= 11) { listNominalPerBulan[blnNota] += parseInt(o.totalBayar || 0); }
+                    }
+                });
+
+                const maxNominalTahun = Math.max(...listNominalPerBulan, 1);
+                const rentangJarakX = lebarKotak / 11;
+
+                for (let bln = 0; bln < 12; bln++) {
+                    const dana = listNominalPerBulan[bln];
+                    const x = bln * rentangJarakX;
+                    const y = tinggiKotak - ((dana / maxNominalTahun) * (tinggiKotak - 40)) - 20;
+                    listDataPoin.push({ x: x, y: y, info: `${namaBulanArr[bln]}: Rp ${dana.toLocaleString('id-ID')}` });
+                    wadahSumbuX.innerHTML += `<span>${namaBulanArr[bln]}</span>`;
+                }
+            }
+
+            let stringKoordinatGaris = listDataPoin.map(p => `${p.x},${p.y}`).join(' ');
+            let stringKoordinatAreaBayangan = `${listDataPoin[0].x},${tinggiKotak} ${stringKoordinatGaris} ${listDataPoin[listDataPoin.length-1].x},${tinggiKotak}`;
+
+            wadahSvg.innerHTML = `
+                <svg width="100%" height="100%" viewBox="0 0 ${lebarKotak} ${tinggiKotak}" class="overflow-visible">
+                    <defs>
+                        <linearGradient id="gradasiGarisChart" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.4"/>
+                            <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.0"/>
+                        </linearGradient>
+                    </defs>
+                    <polygon points="${stringKoordinatAreaBayangan}" fill="url(#gradasiGarisChart)" />
+                    <polyline points="${stringKoordinatGaris}" fill="none" stroke="#3b82f6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                    ${listDataPoin.map(p => `
+                        <circle cx="${p.x}" cy="${p.y}" r="4" fill="#1e293b" stroke="#60a5fa" stroke-width="2" class="cursor-pointer">
+                            <title>${p.info}</title>
+                        </circle>
+                    `).join('')}
+                </svg>`;
+        }
+
+        // 8. KENDALI TABEL BAWAH INTERAKTIF
+        window.setAktifTabelDashboard = function(tipe) {
+            tipeTabelAktif = tipe;
+            const btnReset = document.getElementById('btnResetDashboard');
+            if(tipe === "user") btnReset.classList.add('hidden');
+            else btnReset.classList.remove('hidden');
+            renderTabelBawahDinamis();
+        }
+
+        // 9. RENDERING DINAMIS (DI-UPGRADE SINKRON PARSING TIME-AGO PERSIAL USER.HTML)
+        function renderTabelBawahDinamis() {
+            const hPanel = document.getElementById('judulPanelDinamis');
+            const sPanel = document.getElementById('subJudulPanelDinamis');
+            const thead = document.getElementById('headTabelDinamis');
+            const tbody = document.getElementById('bodyTabelDinamis');
+
+            if (!thead || !tbody) return;
+            thead.innerHTML = ''; tbody.innerHTML = '';
+
+            if (tipeTabelAktif === "user") {
+                hPanel.innerHTML = `<span>🟢</span> Monitoring Akun Aktif Pelanggan (3 Hari Terakhir)`;
+                sPanel.innerText = "Memantau status online dan kunjungan terakhir user yang aktif 3 hari belakangan.";
+                thead.innerHTML = `
+                    <tr class="border-b border-slate-700 text-[10px] font-black text-slate-500 uppercase tracking-wider">
+                        <th class="pb-3 pl-2">Nama Pengguna</th>
+                        <th class="pb-3">Nomor HP</th>
+                        <th class="pb-3">Kunjungan Terakhir</th>
+                        <th class="pb-3 text-center w-28">Status</th>
+                    </tr>`;
+
+                const waktuSekarang = new Date().getTime();
+                const batasWaktuAman = waktuSekarang - (3 * 24 * 60 * 60 * 1000);
+
+                // UPGRADE IMPLEMENTASI BARU: Membaca status online murni dari hitungan selisih waktu lastActive
+                const userSaringStatus = masterDataUsers.map(u => {
+                    let isUserOnlineRealtime = false;
+                    if (u.lastActive && u.lastActive !== '-') {
+                        try {
+                            const formatTgl = u.lastActive.replace(/-/g, '/');
+                            const targetWaktu = new Date(formatTgl);
+                            const selisihDetik = Math.floor((new Date() - targetWaktu) / 1000);
+                            if (selisihDetik < 60) isUserOnlineRealtime = true; // Di bawah 1 menit dianggap Online!
+                        } catch(e) {}
+                    }
+                    return { ...u, kalkulasiOnline: isUserOnlineRealtime };
+                });
+
+                // Terapkan saringan batas maksimal 3 hari untuk user offline
+                const userLolosSaring = userSaringStatus.filter(u => {
+                    if (u.kalkulasiOnline) return true;
+                    if (!u.lastActive || u.lastActive === '-') return false;
+                    try {
+                        const formatTanggalAman = u.lastActive.replace(/\//g, '-').replace(' ', 'T');
+                        const waktuUser = new Date(formatTanggalAman).getTime();
+                        return !isNaN(waktuUser) && waktuUser >= batasWaktuAman;
+                    } catch(e) { return false; }
+                });
+
+                if (userLolosSaring.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-slate-500 italic">Tidak ada aktivitas kunjungan user dalam 3 hari terakhir.</td></tr>`;
+                    return;
+                }
+
+                userLolosSaring.forEach(u => {
+                    const badgeClass = u.kalkulasiOnline ? "bg-emerald-950/60 text-emerald-400 border-emerald-800/50" : "bg-slate-900 text-slate-500 border-slate-800";
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-700/20 transition border-b border-slate-700/40">
+                            <td class="py-3 pl-2 font-bold text-slate-200 capitalize">${u.username}</td>
+                            <td class="py-3 font-mono text-slate-400">${u.noHp || '-'}</td>
+                            <td class="py-3 text-slate-400">${u.lastActive || '-'}</td>
+                            <td class="py-3 text-center"><span class="px-2.5 py-0.5 rounded-md text-[9px] font-black uppercase border ${badgeClass}">${u.kalkulasiOnline ? "🟢 Online" : "⚪ Offline"}</span></td>
+                        </tr>`;
+                });
+            }
+            else if (tipeTabelAktif === "kritis") {
+                hPanel.innerHTML = `<span>⚠️</span> Rincian Daftar Menu Stok Menipis (Sisa ≤ 2)`;
+                sPanel.innerText = "Daftar kuliner makanan/minuman yang stoknya segera habis. Mohon lakukan restock bahan dapur.";
+                thead.innerHTML = `
+                    <tr class="border-b border-slate-700 text-[10px] font-black text-slate-500 uppercase tracking-wider">
+                        <th class="pb-3 pl-2">Nama Menu Kuliner</th>
+                        <th class="pb-3">Kategori</th>
+                        <th class="pb-3">Harga Jual</th>
+                        <th class="pb-3 text-center w-28">Sisa Stok</th>
+                    </tr>`;
+
+                const menuKritis = masterDataMenu.filter(m => m && parseInt(m.stok || 0) <= 2);
+                if (menuKritis.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-emerald-500 italic">🎉 Semua aman! Tidak ada stok menu yang kritis.</td></tr>`;
+                    return;
+                }
+
+                menuKritis.forEach(m => {
+                    const sisa = parseInt(m.stok || 0);
+                    const warnaStok = sisa === 0 ? "text-red-500 font-black animate-pulse" : "text-amber-400 font-bold";
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-700/20 transition border-b border-slate-700/40">
+                            <td class="py-3 pl-2 font-bold text-white">${m.nama || '-'}</td>
+                            <td class="py-3 text-slate-400 capitalize">${m.kategori || '-'}</td>
+                            <td class="py-3 font-mono font-medium text-slate-300">Rp ${(parseInt(m.harga || 0)).toLocaleString('id-ID')}</td>
+                            <td class="py-3 text-center font-mono ${warnaStok}">${sisa === 0 ? 'HABIS' : sisa + ' Porsi'}</td>
+                        </tr>`;
+                });
+            }
+            else if (tipeTabelAktif === "pending") {
+                hPanel.innerHTML = `<span>⏳</span> Rincian Antrean Dapur Pesanan (Pending)`;
+                sPanel.innerText = "Daftar nota belanja masuk dari pembeli yang belum selesai diproses dapur/pengiriman.";
+                thead.innerHTML = `
+                    <tr class="border-b border-slate-700 text-[10px] font-black text-slate-500 uppercase tracking-wider">
+                        <th class="pb-3 pl-2">ID Order</th>
+                        <th class="pb-3">Nama Pemesan</th>
+                        <th class="pb-3">Waktu Masuk</th>
+                        <th class="pb-3 text-right pr-4">Total Tagihan</th>
+                    </tr>`;
+
+                const orderPending = masterDataOrders.filter(o => o && o.status === 'Pending').sort((a,b) => b.waktuPesanan.localeCompare(a.waktuPesanan));
+                if (orderPending.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-emerald-500 italic">✅ Antrean bersih! Dapur telah menyelesaikan semua orderan.</td></tr>`;
+                    return;
+                }
+
+                orderPending.forEach(o => {
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-700/20 transition border-b border-slate-700/40">
+                            <td class="py-3 pl-2 font-mono font-bold text-amber-400">${o.idPesanan || o.firebaseKey}</td>
+                            <td class="py-3 font-bold text-slate-200">${o.namaPelanggan || '-'}</td>
+                            <td class="py-3 text-slate-400 font-mono text-[11px]">${o.waktuPesanan || '-'}</td>
+                            <td class="py-3 text-right pr-4 font-mono font-black text-blue-400">Rp ${(parseInt(o.totalBayar || 0)).toLocaleString('id-ID')}</td>
+                        </tr>`;
+                });
+            }
+            else if (tipeTabelAktif === "omzet") {
+                hPanel.innerHTML = `<span>💰</span> Rekap Riwayat Transaksi Penjualan (Hari Ini Saja)`;
+                sPanel.innerText = "Daftar seluruh nota order pembeli yang telah berhasil lunas diselesaikan khusus pada tanggal hari ini.";
+                thead.innerHTML = `
+                    <tr class="border-b border-slate-700 text-[10px] font-black text-slate-500 uppercase tracking-wider">
+                        <th class="pb-3 pl-2">ID Order</th>
+                        <th class="pb-3">Nama Pemesan</th>
+                        <th class="pb-3">Waktu Selesai</th>
+                        <th class="pb-3 text-right pr-4">Nominal Lunas</th>
+                    </tr>`;
+
+                const skrg = new Date();
+                const tglHariIniStr = `${skrg.getFullYear()}-${String(skrg.getMonth() + 1).padStart(2, '0')}-${String(skrg.getDate()).padStart(2, '0')}`;
+                const orderSelesaiHariIni = masterDataOrders.filter(o => o && o.status === 'Selesai' && o.waktuPesanan && o.waktuPesanan.startsWith(tglHariIniStr)).sort((a,b) => b.waktuPesanan.localeCompare(a.waktuPesanan));
+
+                if (orderSelesaiHariIni.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-slate-500 italic">Belum ada pesanan selesai khusus untuk tanggal hari ini.</td></tr>`;
+                    return;
+                }
+
+                orderSelesaiHariIni.forEach(o => {
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-700/20 transition border-b border-slate-700/40">
+                            <td class="py-3 pl-2 font-mono font-bold text-slate-400">${o.idPesanan || o.firebaseKey}</td>
+                            <td class="py-3 font-bold text-slate-200">${o.namaPelanggan || '-'}</td>
+                            <td class="py-3 text-slate-400 font-mono text-[11px]">${o.waktuPesanan || '-'}</td>
+                            <td class="py-3 text-right pr-4 font-mono font-black text-emerald-400">Rp ${(parseInt(o.totalBayar || 0)).toLocaleString('id-ID')}</td>
+                        </tr>`;
+                });
+            }
+        }
+    </script>
+</body>
+</html>

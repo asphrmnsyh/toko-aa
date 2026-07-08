@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Panel Admin - Analisis Grafik</title>
+    <script src="../tailwind.js"></script>
+    <style>
+        .scrollbar-none::-webkit-scrollbar { display: none; }
+        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen h-screen flex flex-col md:flex-row select-none overflow-hidden">
+
+    <aside class="w-full md:w-64 bg-slate-800 border-b md:border-b-0 md:border-r border-slate-700 p-6 flex flex-col justify-between flex-shrink-0 h-auto md:h-screen z-20">
+        <div>
+            <div class="mb-8 text-center md:text-left">
+                <h2 class="text-2xl font-black tracking-wider text-blue-500">ADMIN PANEL</h2>
+                <p class="text-xs text-slate-400 mt-1">Sistem Manajemen Toko AA</p>
+            </div>
+
+            <nav class="space-y-2 flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 gap-2 md:gap-0 scrollbar-none">
+                <a href="admin.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Dashboard Admin
+                </a>
+                <a href="produk.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Kelola Produk
+                </a>
+                <a href="user.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Kelola User
+                </a>
+                <a href="order.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Detail Pesanan
+                </a>
+                <a href="chart.html" class="block bg-blue-600 text-white font-bold px-4 py-3 rounded-xl shadow transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Grafik Penjualan
+                </a>
+                <a href="rekap.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Rekap & Laris
+                </a>
+                <a href="iklan.html" class="block bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-xl transition text-sm whitespace-nowrap md:whitespace-normal">
+                    Kelola Iklan Popup 📢
+                </a>
+            </nav>
+        </div>
+
+        <button id="btn-logout-admin" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition mt-4 md:mt-0 shadow-lg shadow-red-900/20 flex-shrink-0">
+            Keluar Panel
+        </button>
+    </aside>
+
+    <main class="flex-1 p-6 md:p-8 h-screen flex flex-col overflow-y-auto scrollbar-none relative" onclick="tutupToolboxBulan()">
+        
+        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 mb-6 shadow-sm flex flex-col sm:flex-row justify-between sm:items-center gap-4 flex-shrink-0">
+            <div>
+                <h1 class="text-xl font-extrabold text-white flex items-center gap-2"><span>📊</span> Analisis Grafik Omzet Penjualan</h1>
+                <p class="text-xs text-slate-400 mt-0.5">Halaman khusus pemantauan grafik garis tren pendapatan lunas dari Firebase.</p>
+            </div>
+            
+            <div class="flex items-center gap-3 relative" onclick="event.stopPropagation();">
+                <div class="flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Rentang:</span>
+                    <select id="filterRentangWaktuPage" onchange="gantiModeChartPage(this.value)" class="bg-transparent text-slate-200 text-xs font-black focus:outline-none cursor-pointer">
+                        <option value="bulan">📊 Bulanan</option>
+                        <option value="tahun">📅 Tahunan</option>
+                    </select>
+                </div>
+
+                <button id="btnTriggerBulan" onclick="bukaToolboxBulan()" class="flex items-center gap-1.5 bg-blue-950/60 hover:bg-blue-900 border border-blue-700 text-blue-400 font-black text-xs px-3 py-2 rounded-xl transition active:scale-95 shadow-md">
+                    <span>🗓️</span> <span id="labelBulanAktif">-</span>
+                </button>
+
+                <div id="toolboxBulanPopup" class="absolute top-12 right-0 bg-slate-800 border border-slate-700 w-44 rounded-xl shadow-2xl p-2 z-50 hidden grid-cols-2 gap-1 transform scale-95 opacity-0 transition-all duration-150">
+                    </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 flex-shrink-0">
+            <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-sm space-y-1">
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">💰 Total Omzet Terpilih</span>
+                <h2 id="summary-total-omzet" class="text-xl font-black text-blue-400 font-mono">Rp 0</h2>
+                <p class="text-[10px] text-slate-500 font-medium">Akumulasi pendapatan lunas selesai</p>
+            </div>
+
+            <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-sm space-y-1">
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">📉 Rata-Rata Pendapatan</span>
+                <h2 id="summary-rata-rata" class="text-xl font-black text-emerald-400 font-mono">Rp 0</h2>
+                <p id="summary-sub-rata" class="text-[10px] text-slate-500 font-medium">Rata-rata omzet harian</p>
+            </div>
+
+            <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-sm space-y-1">
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">🏆 Puncak Rekor Tertinggi</span>
+                <h2 id="summary-puncak-nominal" class="text-xl font-black text-amber-400 font-mono">Rp 0</h2>
+                <p id="summary-sub-puncak-label" class="text-[10px] text-slate-400 font-bold truncate">-</p>
+            </div>
+        </div>
+
+        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-md flex flex-col flex-1 min-h-[400px]">
+            <div class="border-b border-slate-700 pb-3 mb-4">
+                <h3 id="judulBesarGrafik" class="text-sm font-black text-white">Visualisasi Tren Fluktuasi Garis Naik-Turun</h3>
+                <p id="subJudulBesarGrafik" class="text-[11px] text-slate-400 mt-0.5">Garis merepresentasikan perbandingan nominal antar hari atau antar bulan.</p>
+            </div>
+
+            <div class="w-full bg-slate-900/60 rounded-xl border border-slate-700/50 p-4 flex-1 flex flex-col justify-between overflow-hidden relative">
+                <div id="wadahSvgLineChartPage" class="w-full h-full flex-1"></div>
+            </div>
+
+            <div class="flex justify-between items-center text-[10px] font-black text-slate-400 uppercase tracking-wider px-4 pt-4 select-none border-t border-t-slate-800/40" id="labelSumbuXChartPage">
+                </div>
+        </div>
+
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAz9WumMNc97Ul-QnONh5rI0hKXh5ZelRY",
+            authDomain: "toko-aa-ef6aa.firebaseapp.com",
+            databaseURL: "https://toko-aa-ef6aa-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "toko-aa-ef6aa",
+            storageBucket: "toko-aa-ef6aa.firebasestorage.app",
+            messagingSenderId: "923877778887",
+            appId: "1:923877778887:web:5eaf71243d582049c825e2"
+        };
+
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        const dbChartPage = firebase.database();
+
+        let masterDataOrders = [];
+        let modeChartPageAktif = "bulan";
+        
+        // Setup Master Data Bulan Global kawan
+        const masterNamaBulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        let bulanDipilihIndex = new Date().getMonth(); // Otomatis mengunci bulan berjalan saat ini sebagai default
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Cek proteksi panel admin
+            if (localStorage.getItem('isLoggedIn') !== 'true' || localStorage.getItem('userRole') !== 'admin') {
+                window.location.href = '../index.html'; return;
+            }
+
+            // Fungsi logout
+            document.getElementById('btn-logout-admin')?.addEventListener('click', () => {
+                if (confirm('Apakah Anda yakin ingin keluar dari Panel Admin?')) {
+                    localStorage.clear(); window.location.href = '../index.html';
+                }
+            });
+
+            // Bangun item di dalam floating toolbox popup bulan kawan
+            buildToolboxBulanItems();
+            updateLabelTombolBulan();
+
+            // Ambil data pesanan selesai dari Firebase
+            dbChartPage.ref('daftarPesanan').on('value', (snapshot) => {
+                const rawOrders = snapshot.val() || {};
+                masterDataOrders = Object.keys(rawOrders).map(key => ({
+                    firebaseKey: key,
+                    ...rawOrders[key]
+                }));
+
+                generateLineChartPageEngine();
+            });
+
+            window.addEventListener('resize', generateLineChartPageEngine);
+        });
+
+        // 6. ENGINE CONTROLLER FLOATING TOOLBOX POPUP BULAN
+        function buildToolboxBulanItems() {
+            const box = document.getElementById('toolboxBulanPopup');
+            if(!box) return;
+            box.innerHTML = '';
+            
+            masterNamaBulan.forEach((bln, idx) => {
+                box.innerHTML += `
+                    <button onclick="pilihBulanDariToolbox(${idx})" class="text-[10px] font-bold text-slate-300 hover:text-white py-1 px-1.5 rounded-md transition text-left truncate ${idx === bulanDipilihIndex ? 'bg-blue-600 text-white font-black' : 'hover:bg-slate-700'}">
+                        ${bln.substring(0,3)}
+                    </button>`;
+            });
+        }
+
+        window.bukaToolboxBulan = function() {
+            const popup = document.getElementById('toolboxBulanPopup');
+            if(!popup) return;
+            popup.classList.remove('hidden'); popup.classList.add('grid');
+            setTimeout(() => { popup.classList.remove('scale-95', 'opacity-0'); popup.classList.add('scale-100', 'opacity-100'); }, 10);
+        }
+
+        window.tutupToolboxBulan = function() {
+            const popup = document.getElementById('toolboxBulanPopup');
+            if(!popup || popup.classList.contains('hidden')) return;
+            popup.classList.remove('scale-100', 'opacity-100'); popup.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { popup.classList.remove('grid'); popup.classList.add('hidden'); }, 150);
+        }
+
+        window.pilihBulanDariToolbox = function(idx) {
+            bulanDipilihIndex = idx;
+            buildToolboxBulanItems();
+            updateLabelTombolBulan();
+            tutupToolboxBulan();
+            generateLineChartPageEngine();
+        }
+
+        function updateLabelTombolBulan() {
+            document.getElementById('labelBulanAktif').innerText = masterNamaBulan[bulanDipilihIndex];
+        }
+
+        window.gantiModeChartPage = function(mode) {
+            modeChartPageAktif = mode;
+            const btn = document.getElementById('btnTriggerBulan');
+            
+            // Jika tahunan, sembunyikan toolbox bulan karena langsung memuat 12 bulan penuh kawan
+            if(mode === "tahun") btn.classList.add('hidden');
+            else btn.classList.remove('hidden');
+
+            generateLineChartPageEngine();
+        }
+
+        // ====================================================================
+        // 7. INTENSIF LOGIC ENGINE: SINKRONISASI TANGGAL & HITUNG BULAN LAINNYA
+        // ====================================================================
+        function generateLineChartPageEngine() {
+            const wadahSvg = document.getElementById('wadahSvgLineChartPage');
+            const wadahSumbuX = document.getElementById('labelSumbuXChartPage');
+            if(!wadahSvg || !wadahSumbuX) return;
+
+            wadahSvg.innerHTML = ''; wadahSumbuX.innerHTML = '';
+
+            const hariIni = new Date();
+            const tahunSekarang = hariIni.getFullYear();
+            const lebarKotak = wadahSvg.clientWidth || 700;
+            const tinggiKotak = wadahSvg.clientHeight || 350;
+
+            let listDataPoin = [];
+            let totalOmzetFiltered = 0;
+            let nilaiRataRata = 0;
+            let dataPuncakTertinggi = { label: "Belum Ada Data", nominal: 0 };
+
+            if (modeChartPageAktif === "bulan") {
+                // Menghitung jumlah hari maksimal pada bulan terpilih dinamis kawan
+                const totalHariDiBulanIni = new Date(tahunSekarang, bulanDipilihIndex + 1, 0).getDate();
+                const stringBulanPembanding = `${tahunSekarang}-${String(bulanDipilihIndex + 1).padStart(2, '0')}`;
+
+                document.getElementById('judulBesarGrafik').innerText = `Tren Fluktuasi Pendapatan Harian (${masterNamaBulan[bulanDipilihIndex]} ${tahunSekarang})`;
+                document.getElementById('subJudulBesarGrafik').innerText = `Menampilkan pergerakan grafik omzet penjualan lunas tanggal 1 s/d ${totalHariDiBulanIni}.`;
+                document.getElementById('summary-sub-rata').innerText = `Rata-rata omzet harian bulan ${masterNamaBulan[bulanDipilihIndex].substring(0,4)}`;
+
+                let nominalHarianObj = {};
+                for (let i = 1; i <= totalHariDiBulanIni; i++) { nominalHarianObj[i] = 0; }
+
+                masterDataOrders.forEach(o => {
+                    if (o && o.status === 'Selesai' && o.waktuPesanan) {
+                        const tglBersih = o.waktuPesanan.replace(/\//g, '-');
+                        if (tglBersih.startsWith(stringBulanPembanding)) {
+                            try {
+                                const tglNota = parseInt(tglBersih.split('-')[2].split(' ')[0]);
+                                if (nominalHarianObj[tglNota] !== undefined) {
+                                    nominalHarianObj[tglNota] += parseInt(o.totalBayar || 0);
+                                }
+                            } catch(e) {}
+                        }
+                    }
+                });
+
+                Object.keys(nominalHarianObj).forEach(hari => {
+                    const dana = nominalHarianObj[hari];
+                    totalOmzetFiltered += dana;
+                    if (dana > dataPuncakTertinggi.nominal) {
+                        dataPuncakTertinggi.nominal = dana;
+                        dataPuncakTertinggi.label = `📅 Tanggal ${hari} ${masterNamaBulan[bulanDipilihIndex]}`;
+                    }
+                });
+                
+                nilaiRataRata = Math.round(totalOmzetFiltered / totalHariDiBulanIni);
+
+                const maxNominal = Math.max(...Object.values(nominalHarianObj), 1);
+                const rentangJarakX = lebarKotak / (totalHariDiBulanIni - 1 || 1);
+
+                for (let hari = 1; hari <= totalHariDiBulanIni; hari++) {
+                    const dana = nominalHarianObj[hari];
+                    const x = (hari - 1) * rentangJarakX;
+                    const y = tinggiKotak - ((dana / maxNominal) * (tinggiKotak - 60)) - 30;
+                    listDataPoin.push({ x: x, y: y, info: `Tgl ${hari}: Rp ${dana.toLocaleString('id-ID')}` });
+                }
+
+                wadahSumbuX.innerHTML = `<span>Tgl 1</span><span>Tgl 10</span><span>Tgl 20</span><span>Tgl ${totalHariDiBulanIni}</span>`;
+            } 
+            else {
+                document.getElementById('judulBesarGrafik').innerText = `Rekapitulasi Total Pendapatan Bulanan (Tahun ${tahunSekarang})`;
+                document.getElementById('subJudulBesarGrafik').innerText = "Menampilkan total perbandingan pemasukan omzet antar 12 bulan penuh.";
+                document.getElementById('summary-sub-rata').innerText = "Rata-rata omzet bulanan tahun ini";
+
+                const namaBulanSingkat = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                let nominalBulananArr = Array(12).fill(0);
+
+                masterDataOrders.forEach(o => {
+                    if (o && o.status === 'Selesai' && o.waktuPesanan) {
+                        const tglBersih = o.waktuPesanan.replace(/\//g, '-');
+                        if (tglBersih.startsWith(String(tahunSekarang))) {
+                            try {
+                                const blnNota = parseInt(tglBersih.split('-')[1]) - 1;
+                                if (blnNota >= 0 && blnNota <= 11) {
+                                    nominalBulananArr[blnNota] += parseInt(o.totalBayar || 0);
+                                }
+                            } catch(e) {}
+                        }
+                    }
+                });
+
+                nominalBulananArr.forEach((dana, blnIndex) => {
+                    totalOmzetFiltered += dana;
+                    if (dana > dataPuncakTertinggi.nominal) {
+                        dataPuncakTertinggi.nominal = dana;
+                        dataPuncakTertinggi.label = `📅 Bulan ${masterNamaBulan[blnIndex]}`;
+                    }
+                });
+
+                nilaiRataRata = Math.round(totalOmzetFiltered / 12);
+
+                const maxNominalTahun = Math.max(...nominalBulananArr, 1);
+                const rentangJarakX = lebarKotak / 11;
+
+                for (let bln = 0; bln < 12; bln++) {
+                    const dana = nominalBulananArr[bln];
+                    const x = bln * rentangJarakX;
+                    const y = tinggiKotak - ((dana / maxNominalTahun) * (tinggiKotak - 60)) - 30;
+                    listDataPoin.push({ x: x, y: y, info: `${masterNamaBulan[bln]}: Rp ${dana.toLocaleString('id-ID')}` });
+                    wadahSumbuX.innerHTML += `<span>${namaBulanSingkat[bln]}</span>`;
+                }
+            }
+
+            // Update Statistik Kartu Atas kawan
+            document.getElementById('summary-total-omzet').innerText = `Rp ${totalOmzetFiltered.toLocaleString('id-ID')}`;
+            document.getElementById('summary-rata-rata').innerText = `Rp ${nilaiRataRata.toLocaleString('id-ID')}`;
+            document.getElementById('summary-puncak-nominal').innerText = `Rp ${dataPuncakTertinggi.nominal.toLocaleString('id-ID')}`;
+            document.getElementById('summary-sub-puncak-label').innerText = dataPuncakTertinggi.nominal > 0 ? dataPuncakTertinggi.label : "-";
+
+            // Render Struktur SVG Line Chart
+            let stringKoordinatGaris = listDataPoin.map(p => `${p.x},${p.y}`).join(' ');
+            let stringKoordinatAreaBayangan = `${listDataPoin[0].x},${tinggiKotak} ${stringKoordinatGaris} ${listDataPoin[listDataPoin.length-1].x},${tinggiKotak}`;
+
+            wadahSvg.innerHTML = `
+                <svg width="100%" height="100%" viewBox="0 0 ${lebarKotak} ${tinggiKotak}" class="overflow-visible">
+                    <defs>
+                        <linearGradient id="gradasiGarisPageChart" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.35"/>
+                            <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.0"/>
+                        </linearGradient>
+                    </defs>
+                    <polygon points="${stringKoordinatAreaBayangan}" fill="url(#gradasiGarisPageChart)" />
+                    <polyline points="${stringKoordinatGaris}" fill="none" stroke="#3b82f6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                    ${listDataPoin.map(p => `
+                        <circle cx="${p.x}" cy="${p.y}" r="5" fill="#1e293b" stroke="#60a5fa" stroke-width="2.5" class="cursor-pointer">
+                            <title>${p.info}</title>
+                        </circle>
+                    `).join('')}
+                </svg>`;
+        }
+    </script>
+</body>
+</html>
