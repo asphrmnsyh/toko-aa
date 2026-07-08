@@ -84,28 +84,9 @@ function eksekusiValidasiLogin(username, password) {
                                 String(tglAktif.getMinutes()).padStart(2, '0') + ':' + 
                                 String(tglAktif.getSeconds()).padStart(2, '0');
 
-    // 1. Akun Admin Utama FastBite Anda (User: admin, Pass: zzz) -> Langsung tembus instan[span_2](start_span)[span_2](end_span)
-    if (username === 'admin' && password === 'zzz') {
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('userRole', 'admin');
-        localStorage.setItem('username', 'admin');
-        
-        // UPGRADE: Rekam lastActive untuk akun admin di Firebase node users/admin
-        db.ref('users/admin').update({
-            nama: "Admin Utama",
-            password: "zzz",
-            role: "admin",
-            lastActive: stringWaktuSekarang
-        });
-
-        // Pindah otomatis sekejap mata tanpa popup alert OK[span_3](start_span)[span_3](end_span)
-        window.location.href = 'Admin/admin.html';
-        return;
-    }
-
     console.log("Sedang mencari data user: " + username);
 
-    // 2. Tarik Akun Customer dari Node 'users/' Firebase Realtime Anda[span_4](start_span)[span_4](end_span)
+    // Tarik Akun dari Node 'users/' Firebase Realtime Anda (Termasuk akun Admin)
     db.ref('users/' + username).once('value', (snapshot) => {
         if (!snapshot.exists()) {
             alert(`Username "${username}" tidak ditemukan!`);
@@ -114,17 +95,24 @@ function eksekusiValidasiLogin(username, password) {
 
         const dataUser = snapshot.val();
         if (dataUser && dataUser.password === password) {
+            // Dapatkan role dari database, jika tidak ada default ke customer
+            const userRole = dataUser.role || 'customer';
+            
             localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('userRole', dataUser.role || 'customer');
+            localStorage.setItem('userRole', userRole);
             localStorage.setItem('username', username);
             
-            // UPGRADE: Rekam lastActive untuk customer yang berhasil login ke node-nya masing-masing
+            // REKAM JEJAK AKTIF: Update lastActive ke Firebase cloud
             db.ref('users/' + username).update({
                 lastActive: stringWaktuSekarang
             });
 
-            // Pindah otomatis sekejap mata tanpa popup alert OK[span_5](start_span)[span_5](end_span)
-            window.location.href = 'dashboard.html';
+            // PENGALIHAN HALAMAN BERDASARKAN ROLE DATA
+            if (userRole === 'admin') {
+                window.location.href = 'Admin/admin.html'; // Mengarah ke folder Admin jika rolenya admin
+            } else {
+                window.location.href = 'dashboard.html'; // Mengarah ke dashboard jika rolenya customer
+            }
         } else {
             alert('Password yang Anda masukkan salah!');
         }
