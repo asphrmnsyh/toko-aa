@@ -312,6 +312,22 @@
         window.modeTampilan = "grid";
         window.iklanSudahDitutup = false; 
 
+        // ================================================================
+        // PROTEKSI AWAL: ANTI-BACK SEBELUM DOM LOAD SELESAI
+        // ================================================================
+        if (localStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.replace('index.html');
+        } else {
+            window.history.pushState(null, null, window.location.href);
+            window.addEventListener('popstate', function () {
+                if (localStorage.getItem('isLoggedIn') !== 'true') {
+                    window.location.replace('index.html');
+                } else {
+                    window.history.pushState(null, null, window.location.href);
+                }
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             
             // ================================================================
@@ -382,10 +398,6 @@
                 setTimeout(() => { modal.classList.remove('flex'); modal.classList.add('hidden'); }, 180);
             }
 
-            if (localStorage.getItem('isLoggedIn') !== 'true') {
-                window.location.href = 'index.html'; return;
-            }
-
             const usernameAktif = localStorage.getItem('username') || 'Pelanggan';
             const namaHeaderElement = document.getElementById('nama-user-header');
             if (namaHeaderElement) {
@@ -408,10 +420,13 @@
                 });
             }
 
-            // MODIFIKASI SEDIKIT AGAR TOMBOL LOGOUT ASYNC MENDUKUNG PROMISE WINDOW.CONFIRM CUSTOM
+            // ================================================================
+            // MODIFIKASI: LOGOUT ASYNC DENGAN PROTEKSI PERMANEN REPLACE
+            // ================================================================
             document.getElementById('btn-logout')?.addEventListener('click', async () => {
                 if (await confirm('Apakah Anda yakin ingin keluar dari aplikasi Toko AA?')) {
-                    localStorage.clear(); window.location.href = 'index.html';
+                    localStorage.clear(); 
+                    window.location.replace('index.html');
                 }
             });
 
