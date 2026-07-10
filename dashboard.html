@@ -268,6 +268,15 @@
         </div>
     </div>
 
+    <!-- MODAL ALERT & CONFIRM GLOBAL CUSTOM TOKO AA -->
+    <div id="modalGlobalCustom" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] hidden justify-center items-center p-4">
+        <div class="bg-white text-slate-800 w-full max-w-xs rounded-2xl p-5 shadow-2xl transform scale-95 opacity-0 transition-all duration-200 text-center" id="modalGlobalContent">
+            <h3 class="text-sm font-black text-slate-800 mb-2 tracking-tight">Toko AA</h3>
+            <p class="text-xs text-slate-500 mb-5 leading-normal" id="textModalGlobal"></p>
+            <div class="flex justify-center gap-3" id="wrapperTombolGlobal"></div>
+        </div>
+    </div>
+
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
     
@@ -304,11 +313,74 @@
         window.iklanSudahDitutup = false; 
 
         document.addEventListener('DOMContentLoaded', () => {
-            const originalAlert = window.alert;
+            
+            // ================================================================
+            // FUNGSI TIMPA / INTERCEPT ALERT GLOBAL CUSTOM
+            // ================================================================
             window.alert = function(msg) {
                 if (msg && msg.toLowerCase().includes("struktur input form")) return;
-                originalAlert(msg);
+                
+                const modal = document.getElementById('modalGlobalCustom');
+                const content = document.getElementById('modalGlobalContent');
+                const textArea = document.getElementById('textModalGlobal');
+                const btnWrapper = document.getElementById('wrapperTombolGlobal');
+                if (!modal || !content || !textArea || !btnWrapper) return;
+
+                textArea.innerText = msg;
+                btnWrapper.innerHTML = `
+                    <button id="btnAlertOk" class="bg-blue-600 text-white text-xs font-bold px-7 py-2 rounded-xl hover:bg-blue-700 active:scale-95 transition-all shadow-md shadow-blue-600/20">
+                        Oke
+                    </button>
+                `;
+
+                modal.classList.remove('hidden'); modal.classList.add('flex');
+                setTimeout(() => { content.classList.remove('scale-95', 'opacity-0'); content.classList.add('scale-100', 'opacity-100'); }, 20);
+
+                document.getElementById('btnAlertOk').onclick = function() {
+                    content.classList.remove('scale-100', 'opacity-100'); content.classList.add('scale-95', 'opacity-0');
+                    setTimeout(() => { modal.classList.remove('flex'); modal.classList.add('hidden'); }, 180);
+                };
             };
+
+            // ================================================================
+            // FUNGSI TIMPA / INTERCEPT CONFIRM GLOBAL CUSTOM
+            // ================================================================
+            window.confirm = function(msg) {
+                const modal = document.getElementById('modalGlobalCustom');
+                const content = document.getElementById('modalGlobalContent');
+                const textArea = document.getElementById('textModalGlobal');
+                const btnWrapper = document.getElementById('wrapperTombolGlobal');
+                if (!modal || !content || !textArea || !btnWrapper) return Promise.resolve(false);
+
+                textArea.innerText = msg;
+                btnWrapper.innerHTML = `
+                    <button id="btnConfirmBatal" class="bg-slate-100 text-slate-600 text-xs font-bold px-5 py-2 rounded-xl hover:bg-slate-200 active:scale-95 transition-all">
+                        Batal
+                    </button>
+                    <button id="btnConfirmOke" class="bg-blue-600 text-white text-xs font-bold px-5 py-2 rounded-xl hover:bg-blue-700 active:scale-95 transition-all shadow-md shadow-blue-600/20">
+                        Oke
+                    </button>
+                `;
+
+                modal.classList.remove('hidden'); modal.classList.add('flex');
+                setTimeout(() => { content.classList.remove('scale-95', 'opacity-0'); content.classList.add('scale-100', 'opacity-100'); }, 20);
+
+                return new Promise((resolve) => {
+                    document.getElementById('btnConfirmBatal').onclick = function() {
+                        tutupModalAnimasi(modal, content);
+                        resolve(false);
+                    };
+                    document.getElementById('btnConfirmOke').onclick = function() {
+                        tutupModalAnimasi(modal, content);
+                        resolve(true);
+                    };
+                });
+            };
+
+            function tutupModalAnimasi(modal, content) {
+                content.classList.remove('scale-100', 'opacity-100'); content.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => { modal.classList.remove('flex'); modal.classList.add('hidden'); }, 180);
+            }
 
             if (localStorage.getItem('isLoggedIn') !== 'true') {
                 window.location.href = 'index.html'; return;
@@ -336,8 +408,9 @@
                 });
             }
 
-            document.getElementById('btn-logout')?.addEventListener('click', () => {
-                if (confirm('Apakah Anda yakin ingin keluar dari aplikasi Toko AA?')) {
+            // MODIFIKASI SEDIKIT AGAR TOMBOL LOGOUT ASYNC MENDUKUNG PROMISE WINDOW.CONFIRM CUSTOM
+            document.getElementById('btn-logout')?.addEventListener('click', async () => {
+                if (await confirm('Apakah Anda yakin ingin keluar dari aplikasi Toko AA?')) {
                     localStorage.clear(); window.location.href = 'index.html';
                 }
             });
