@@ -271,12 +271,41 @@
         function prosesKonversiFileToBase64(element) {
             const file = element.files[0];
             if (!file) return;
-            document.getElementById('namaFileInfo').innerText = `📄 ${file.name}`;
+            
+            document.getElementById('namaFileInfo').innerText = `📄 ${file.name} (Mengompresi...)`;
+            
             const reader = new FileReader();
             reader.onloadend = function() {
-                stringBase64Gambar = reader.result;
-                perbaruiLivePreviewMobile();
-            }
+                const img = new Image();
+                img.src = reader.result;
+                
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Batasi lebar maksimal banner ke 800px demi efisiensi Base64
+                    const MAX_WIDTH = 800;
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    if (width > MAX_WIDTH) {
+                        height = Math.round((height * MAX_WIDTH) / width);
+                        width = MAX_WIDTH;
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    // Render ulang gambar pada canvas
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Konversi ke format JPEG dengan kualitas 75% (0.75)
+                    stringBase64Gambar = canvas.toDataURL('image/jpeg', 0.75);
+                    
+                    document.getElementById('namaFileInfo').innerText = `📂 ${file.name} (Berhasil dikompres)`;
+                    perbaruiLivePreviewMobile();
+                };
+            };
             reader.readAsDataURL(file);
         }
 
